@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Imperium</string>
+    <string name="auth_failed">Authentication failed, Please check your Username and Password or your Internet Connection</string>
+    <string name="reset">Please enter the valid Email Address you have registered to Imperium.</string>
+    <string name="pin_content_desc">PIN input field</string>
+    <string name="pin_label_text">Please Enter your PIN</string>
+    <string name="title_activity_mainmenu">Main Menu</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="addchild">"Please input your Child's Name and Email Address"</string>
+    <string name="addchildb">"Add Child"</string>
+    <string name="addname">Full Name</string>
+    <string name="addemail">Email Address</string>
+    <string name="ChildActivities">Please Select Child to Monitor Activties</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

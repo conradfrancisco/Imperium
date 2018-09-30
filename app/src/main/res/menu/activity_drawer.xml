@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/profile"
+            android:icon="@drawable/user"
+            android:title="My Profile" />
+        <item
+            android:id="@+id/add"
+            android:icon="@drawable/addchild"
+            android:title="Add New Child" />
+        <item
+            android:id="@+id/activities"
+            android:icon="@drawable/basketball"
+            android:title="Child Activities" />
+        <item
+            android:id="@+id/tasks"
+            android:icon="@drawable/list"
+            android:title="Child Tasks" />
+        <item
+            android:id="@+id/location"
+            android:icon="@drawable/placeholder"
+            android:title="Child Location" />
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/logout"
+            android:title="Logout" />
+    </group>
+
+</menu>
