@@ -205,8 +205,7 @@ public class register extends AppCompatActivity {
         u.setPin("New");
 
         databaseReference.child("Users").child(username).setValue(u);
-        String split[] = email.split("@");
-        databaseReference.child(split[0]).setValue(username);
+
     }
     public void onBackPressed(){
 
