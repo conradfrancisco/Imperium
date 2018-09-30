@@ -2,6 +2,7 @@ package capstone.uic.com.imperium;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -17,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,12 +27,12 @@ import com.google.firebase.database.ValueEventListener;
 
 public class AddChildFragment extends Fragment {
 
-    private FirebaseAuth auth123;
+    private FirebaseAuth auth;
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private OnFragmentInteractionListener mListener;
     private ProgressBar progress;
-    private DatabaseReference ref, ref1, ref2;
+    private DatabaseReference ref, ref1, ref2, ref3;
     private String textmessage = "*G DRIVE LINK OF IMPERIUM CHILD APP TO BE INSERTED*";
     private String subjected = "Welcome to Imperium: A Parental Control Application";
     private String username = "noreply.ImperiumMonitoring@gmail.com";
@@ -79,21 +81,25 @@ public class AddChildFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState){
 
+        auth = FirebaseAuth.getInstance();
+        final FirebaseUser usersz = auth.getCurrentUser();
+
         edit1 = (EditText) view.findViewById(R.id.editText1234);
         edit2 = (EditText) view.findViewById(R.id.editText134);
         save1 = (Button) view.findViewById(R.id.savebutton123);
         progress = (ProgressBar) view.findViewById(R.id.progressb123);
-        auth123 = FirebaseAuth.getInstance();
         FirebaseApp.initializeApp(getActivity());
         ref = FirebaseDatabase.getInstance().getReference("Users");
         ref1 = FirebaseDatabase.getInstance().getReference("Users");
         ref2 = FirebaseDatabase.getInstance().getReference("Users");
+        ref3 = FirebaseDatabase.getInstance().getReference();
         getCurrentUser();
 
         save1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                final String usersd = usersz.getEmail();
                 progress.setVisibility(View.VISIBLE);
                 email = edit2.getText().toString();
                 namesd = edit1.getText().toString();
@@ -124,12 +130,13 @@ public class AddChildFragment extends Fragment {
                         }).start();
 
                         String split[] = email.split("@");
+                        String split1[] = usersd.split("@");
                         ref.child(user).child("Children").child(split[0]).child("ChildName").setValue(namesd);
                         ref2.child(user).child("Children").child(split[0]).child("ChildPass").setValue(pass);
                         ref1.child(user).child("AllChildren").child(namesd).setValue(split[0]);
+                        ref3.child("Children").child(split[0]).child(split1[0]).setValue(user);
                         progress.setVisibility(View.GONE);
-                        edit1.setText(null);
-                        edit2.setText(null);
+                        startActivity(new Intent(getActivity(), mainmenu.class));
 
                     }
                 });
@@ -140,6 +147,8 @@ public class AddChildFragment extends Fragment {
                         dialogInterface.dismiss();
                         Snackbar sn = Snackbar.make(getView(), "Cancelled", Snackbar.LENGTH_SHORT);
                         sn.show();
+                        edit1.setText(null);
+                        edit2.setText(null);
 
 
                     }

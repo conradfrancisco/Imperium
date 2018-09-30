@@ -26,6 +26,7 @@ public class ChildActivitiesFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    final List<String> names = new ArrayList<String>();
     private String mParam1;
     private FirebaseAuth auth;
     private DatabaseReference ref, ref1;
@@ -89,7 +90,6 @@ public class ChildActivitiesFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                final List<String> names = new ArrayList<String>();
 
                 for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
                     String FName = nameSnapshot.getKey();
@@ -98,10 +98,6 @@ public class ChildActivitiesFragment extends Fragment {
 
                 }
 
-                ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, names);
-                namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinname.setAdapter(namesAdapter);
-
             }
 
             @Override
@@ -109,6 +105,10 @@ public class ChildActivitiesFragment extends Fragment {
 
             }
         });
+
+        ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
+        namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinname.setAdapter(namesAdapter);
 
 
     }
