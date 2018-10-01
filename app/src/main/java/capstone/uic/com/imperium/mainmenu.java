@@ -31,6 +31,7 @@ public class mainmenu extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
                     ProfileFragment.OnFragmentInteractionListener,
                     AddChildFragment.OnFragmentInteractionListener,
+                    GeofencingFragments.OnFragmentInteractionListener,
                     ChildActivitiesFragment.OnFragmentInteractionListener
     {
 
@@ -135,6 +136,10 @@ public class mainmenu extends AppCompatActivity
         }
 
         else if (id == R.id.location) {
+
+            GeofencingFragments p = new GeofencingFragments();
+            FragmentManager f = getSupportFragmentManager();
+            f.beginTransaction().replace(R.id.mainLayout, p).commit();
 
 
         }
