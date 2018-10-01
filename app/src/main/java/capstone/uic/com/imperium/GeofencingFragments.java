@@ -47,11 +47,9 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
     public void onMapReady(GoogleMap googleMap) {
 
         maps = googleMap;
-        LatLng loc = new LatLng(254, 213);
-        MarkerOptions options = new MarkerOptions();
-        options.position(loc).title("Current Location");
-        maps.addMarker(options);
-        maps.moveCamera(CameraUpdateFactory.newLatLng(loc));
+        LatLng loc = new LatLng(-31, 151);
+        maps.addMarker(new MarkerOptions().position(loc).title("Set Location"));
+        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 15));
 
 
     }
