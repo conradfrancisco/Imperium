@@ -9,8 +9,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -29,12 +31,14 @@ public class ChildActivitiesFragment extends Fragment {
     final List<String> names = new ArrayList<String>();
     private String mParam1;
     private FirebaseAuth auth;
-    private DatabaseReference ref, ref1;
+    private DatabaseReference ref1;
     private String mParam2;
     private Spinner spinname;
     String user = "";
     String email = "";
     String parent = "";
+    String values = "";
+    String array[];
     private OnFragmentInteractionListener mListener;
 
     public ChildActivitiesFragment() {
@@ -92,11 +96,31 @@ public class ChildActivitiesFragment extends Fragment {
 
 
                 for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
+
                     String FName = nameSnapshot.getKey();
                     names.add(FName);
                     System.out.println(FName);
 
                 }
+
+                ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
+                namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinname.setAdapter(namesAdapter);
+                spinname.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+                        TextView tv = (TextView)view;
+                        values = tv.getText().toString();
+                        System.out.println(values);
+
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
 
             }
 
@@ -104,14 +128,14 @@ public class ChildActivitiesFragment extends Fragment {
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
+
+
         });
 
-        ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
-        namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinname.setAdapter(namesAdapter);
 
 
     }
+
 
 
     @Override
