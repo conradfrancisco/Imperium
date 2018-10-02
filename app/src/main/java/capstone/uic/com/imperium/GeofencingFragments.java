@@ -42,22 +42,26 @@ import java.util.List;
 public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
     private OnFragmentInteractionListener mListener;
+    private DatabaseReference ref, ref1, ref2, ref3;
+    private FirebaseAuth auth;
     GoogleMap maps;
     private Spinner mapspin;
     final List<String> names = new ArrayList<String>();
     private EditText address;
     private Button save;
-    private FirebaseAuth auth;
-    private DatabaseReference ref1;
     String user = "";
     String email = "";
     String values = "";
+    String love = "";
     String addresses = "";
+    String passemails = "";
     LatLng set;
     String lat = "";
     String lng = "";
     LatLng setloc;
+    String retrievelat = "", retrievelng = "";
     double l, lg;
+    String emails = "";
 
 
     public GeofencingFragments() {
@@ -80,7 +84,10 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
         address = (EditText) view.findViewById(R.id.address);
         save = (Button) view.findViewById(R.id.save);
         addresses = address.getText().toString().trim();
-
+        ref = FirebaseDatabase.getInstance().getReference("Users");
+        ref1 = FirebaseDatabase.getInstance().getReference("Users");
+        ref2 = FirebaseDatabase.getInstance().getReference("Users");
+        ref3 = FirebaseDatabase.getInstance().getReference("Users");
         auth = FirebaseAuth.getInstance();
         FirebaseUser users = auth.getCurrentUser();
         if(users!=null){
@@ -88,20 +95,12 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
             email = users.getEmail();
             mainmenu act = (mainmenu) getActivity();
             user = act.getMyUser();
+            System.out.println(emails);
+            System.out.println(user);
 
 
         }
 
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                new GetCoordinates().execute(address.getText().toString().replace(" ","+"));
-                System.out.println(lat + " "+lng);
-
-
-            }
-        });
         ref1 = FirebaseDatabase.getInstance().getReference("Users");
         ref1.child(user).child("AllChildren").addValueEventListener(new ValueEventListener() {
             @Override
@@ -122,7 +121,80 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
                             TextView tv = (TextView)view;
                             values = tv.getText().toString();
-                            System.out.println(values);
+                            love = values;
+                            System.out.println("Ako si:"+" "+love);
+
+                            DatabaseReference getuser3 = FirebaseDatabase.getInstance().getReference().child("Users");
+                            getuser3.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                    if( dataSnapshot != null){
+
+                                        passemails = dataSnapshot.child(user).child("AllChildren").child(love).getValue(String.class);
+                                        System.out.println("I am"+ " "+passemails);
+
+                                        DatabaseReference getuser1 = FirebaseDatabase.getInstance().getReference().child("Users");
+                                        getuser1.addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                if( dataSnapshot != null){
+
+                                                    retrievelat = dataSnapshot.child(user).child("Children").child(passemails).child("Location").child("Latitude").getValue(String.class);
+                                                    System.out.println("Ako diay si: "+user+ " og akong email kay: "+passemails);
+                                                    System.out.println("Latitude nako kay:"+ " "+retrievelat);
+
+                                                    DatabaseReference getuser2 = FirebaseDatabase.getInstance().getReference().child("Users");
+                                                    getuser2.addValueEventListener(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                            if( dataSnapshot != null){
+
+                                                                retrievelng = dataSnapshot.child(user).child("Children").child(passemails).child("Location").child("Longitude").getValue(String.class);
+                                                                System.out.println("Ako diay si: "+user+ " og akong email kay: "+passemails);
+                                                                System.out.println("Longitude nako kay:"+ " "+retrievelng);
+                                                                Double l1 = Double.parseDouble(retrievelat);
+                                                                Double l2 = Double.parseDouble(retrievelng);
+                                                                LatLng newer = new LatLng(l1, l2);
+                                                                moveCamera(newer, "Saved Location");
+
+                                                            }
+
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {
+
+
+
+                                                        }
+                                                    });
+
+                                                }
+
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+
+
+                                            }
+                                        });
+
+                                    }
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+
+
+                                }
+                            });
 
                         }
 
@@ -143,6 +215,16 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
         SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         map.getMapAsync(this);
+
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                new GetCoordinates().execute(address.getText().toString().replace(" ","+"));
+                getCurrentUser();
+
+            }
+        });
     }
 
     private class GetCoordinates extends AsyncTask<String,Void,String> {
@@ -191,6 +273,9 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
                 lg = Double.parseDouble(lng);
                 setloc = new LatLng(l,lg);
                 moveCamera(setloc, "Set Location");
+                System.out.println("Latitude:"+lat+ "and Longitude:"+lng+ ","+"User:"+user+" and Email is:"+emails);
+                ref2.child(user).child("Children").child(emails).child("Location").child("Latitude").setValue(lat);
+                ref3.child(user).child("Children").child(emails).child("Location").child("Longitude").setValue(lng);
 
                 if(dialog.isShowing())
                     dialog.dismiss();
@@ -206,9 +291,8 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
     public void onMapReady(GoogleMap googleMap) {
 
         maps = googleMap;
-        LatLng l = new LatLng(-31, 151);
-        maps.addMarker(new MarkerOptions().position(l).title("Current Location"));
-        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(l, 15));
+        LatLng l = new LatLng(7.051400, 125.594772);
+        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(l, 5));
 
 
     }
@@ -217,6 +301,32 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
         maps.clear();
         maps.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         maps.addMarker(new MarkerOptions().position(latLng).title(title));
+    }
+
+    private void getCurrentUser(){
+
+        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users");
+        getuser.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if( dataSnapshot != null){
+
+                   emails = dataSnapshot.child(user).child("AllChildren").child(love).getValue(String.class);
+                   System.out.println("I am"+ " "+emails);
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+
+
+            }
+        });
+
     }
 
     @Override
