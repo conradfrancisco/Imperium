@@ -302,8 +302,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
     }
 
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
+    @Override public void onMapReady(GoogleMap googleMap) {
 
         maps = googleMap;
         maps.clear();
