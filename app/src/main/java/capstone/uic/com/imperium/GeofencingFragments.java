@@ -22,6 +22,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -49,6 +51,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
     final List<String> names = new ArrayList<String>();
     private EditText address;
     private Button save;
+    private Circle mCircle;
     String user = "";
     String email = "";
     String values = "";
@@ -301,6 +304,18 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
         maps.clear();
         maps.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
         maps.addMarker(new MarkerOptions().position(latLng).title(title));
+        drawMarkerWithCircle(latLng);
+    }
+
+    private void drawMarkerWithCircle(LatLng position){
+
+        double radiusInMeters = 100;
+        int strokeColor = 0xffff0000;
+        int shadeColor = 0x44ff0000;
+
+        CircleOptions circleOptions = new CircleOptions().center(position).radius(radiusInMeters).fillColor(shadeColor).strokeColor(strokeColor).strokeWidth(8);
+        mCircle = maps.addCircle(circleOptions);
+
     }
 
     private void getCurrentUser(){
