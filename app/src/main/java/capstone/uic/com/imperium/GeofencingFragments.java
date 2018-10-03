@@ -1,13 +1,17 @@
 package capstone.uic.com.imperium;
 
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +29,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,29 +38,30 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
+public class GeofencingFragments extends Fragment implements OnMapReadyCallback {
 
     private OnFragmentInteractionListener mListener;
     private DatabaseReference ref, ref1, ref2, ref3;
     private FirebaseAuth auth;
     GoogleMap maps;
+    private TextView textView;
     private Spinner mapspin;
     final List<String> names = new ArrayList<String>();
     private EditText address;
     private Button save;
     private Circle mCircle;
+    Marker marker1, marker2;
     String user = "";
     String email = "";
     String values = "";
-    String love = "";
     String addresses = "";
     String passemails = "";
     LatLng set;
@@ -63,8 +69,11 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
     String lng = "";
     LatLng setloc;
     String retrievelat = "", retrievelng = "";
-    double l, lg;
+    double l, lg, newl, newlg;
     String emails = "";
+    String newemails = "";
+    String currentloc = "";
+    String currentloc1[];
 
 
     public GeofencingFragments() {
@@ -75,9 +84,8 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v  = inflater.inflate(R.layout.fragment_geofencing_fragments, container, false);
+        View v = inflater.inflate(R.layout.fragment_geofencing_fragments, container, false);
         return v;
-
     }
 
     @Override
@@ -86,6 +94,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
         mapspin = (Spinner) view.findViewById(R.id.mapspin);
         address = (EditText) view.findViewById(R.id.address);
         save = (Button) view.findViewById(R.id.save);
+        textView = (TextView) view.findViewById(R.id.selectmap);
         addresses = address.getText().toString().trim();
         ref = FirebaseDatabase.getInstance().getReference("Users");
         ref1 = FirebaseDatabase.getInstance().getReference("Users");
@@ -93,7 +102,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
         ref3 = FirebaseDatabase.getInstance().getReference("Users");
         auth = FirebaseAuth.getInstance();
         FirebaseUser users = auth.getCurrentUser();
-        if(users!=null){
+        if (users != null) {
 
             email = users.getEmail();
             mainmenu act = (mainmenu) getActivity();
@@ -103,6 +112,22 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
 
         }
+
+        startTimer();
+
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                marker1.remove();
+                mCircle.remove();
+                new GetCoordinates().execute(address.getText().toString().replace(" ", "+"));
+                getCurrentUser();
+                startActivity(new Intent(getActivity(), mainmenu.class));
+            }
+
+
+        });
 
         ref1 = FirebaseDatabase.getInstance().getReference("Users");
         ref1.child(user).child("AllChildren").addValueEventListener(new ValueEventListener() {
@@ -122,42 +147,42 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
                         @Override
                         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                            TextView tv = (TextView)view;
+                            TextView tv = (TextView) view;
                             values = tv.getText().toString();
-                            love = values;
-                            System.out.println("Ako si:"+" "+love);
+                            System.out.println("Ako si:" + " " + values);
+                            getUser();
 
                             DatabaseReference getuser3 = FirebaseDatabase.getInstance().getReference().child("Users");
                             getuser3.addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                    if( dataSnapshot != null){
+                                    if (dataSnapshot != null) {
 
-                                        passemails = dataSnapshot.child(user).child("AllChildren").child(love).getValue(String.class);
-                                        System.out.println("I am"+ " "+passemails);
+                                        passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                                        System.out.println("I am" + " " + passemails);
 
                                         DatabaseReference getuser1 = FirebaseDatabase.getInstance().getReference().child("Users");
                                         getuser1.addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                                if( dataSnapshot != null){
+                                                if (dataSnapshot != null) {
 
                                                     retrievelat = dataSnapshot.child(user).child("Children").child(passemails).child("Location").child("Latitude").getValue(String.class);
-                                                    System.out.println("Ako diay si: "+user+ " og akong email kay: "+passemails);
-                                                    System.out.println("Latitude nako kay:"+ " "+retrievelat);
+                                                    System.out.println("Ako diay si: " + user + " og akong email kay: " + passemails);
+                                                    System.out.println("Latitude nako kay:" + " " + retrievelat);
 
                                                     DatabaseReference getuser2 = FirebaseDatabase.getInstance().getReference().child("Users");
                                                     getuser2.addValueEventListener(new ValueEventListener() {
                                                         @Override
                                                         public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                                            if( dataSnapshot != null){
+                                                            if (dataSnapshot != null) {
 
                                                                 retrievelng = dataSnapshot.child(user).child("Children").child(passemails).child("Location").child("Longitude").getValue(String.class);
-                                                                System.out.println("Ako diay si: "+user+ " og akong email kay: "+passemails);
-                                                                System.out.println("Longitude nako kay:"+ " "+retrievelng);
+                                                                System.out.println("Ako diay si: " + user + " og akong email kay: " + passemails);
+                                                                System.out.println("Longitude nako kay:" + " " + retrievelng);
                                                                 Double l1 = Double.parseDouble(retrievelat);
                                                                 Double l2 = Double.parseDouble(retrievelng);
                                                                 LatLng newer = new LatLng(l1, l2);
@@ -171,7 +196,6 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
                                                         public void onCancelled(DatabaseError databaseError) {
 
 
-
                                                         }
                                                     });
 
@@ -183,7 +207,6 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
                                             public void onCancelled(DatabaseError databaseError) {
 
 
-
                                             }
                                         });
 
@@ -193,7 +216,6 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
                                 @Override
                                 public void onCancelled(DatabaseError databaseError) {
-
 
 
                                 }
@@ -218,16 +240,6 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
         SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         map.getMapAsync(this);
-
-        save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                new GetCoordinates().execute(address.getText().toString().replace(" ","+"));
-                getCurrentUser();
-
-            }
-        });
     }
 
     private class GetCoordinates extends AsyncTask<String,Void,String> {
@@ -294,6 +306,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
     public void onMapReady(GoogleMap googleMap) {
 
         maps = googleMap;
+        maps.clear();
         LatLng l = new LatLng(7.051400, 125.594772);
         maps.moveCamera(CameraUpdateFactory.newLatLngZoom(l, 5));
 
@@ -301,10 +314,15 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
     }
 
     private void moveCamera(LatLng latLng, String title){
-        maps.clear();
-        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-        maps.addMarker(new MarkerOptions().position(latLng).title(title));
+        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+        marker1 = maps.addMarker(new MarkerOptions().position(latLng).title(title));
         drawMarkerWithCircle(latLng);
+    }
+
+    private void moveCamera1(Double a, Double b, String title){
+        LatLng c = new LatLng(a,b);
+        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(c, 16));
+        marker2 = maps.addMarker(new MarkerOptions().position(c).title(title));
     }
 
     private void drawMarkerWithCircle(LatLng position){
@@ -318,6 +336,57 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
     }
 
+    private void getCurrentLoc(){
+
+        DatabaseReference getLoc = FirebaseDatabase.getInstance().getReference().child("Children");
+        getLoc.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if( dataSnapshot != null){
+
+                    System.out.println("Newemails: "+newemails);
+                    currentloc = dataSnapshot.child(newemails).child("CurrentLocation").getValue(String.class);
+                    System.out.println("Current Location"+ " "+currentloc);
+                    currentloc1 = currentloc.split(",");
+                    newl = Double.parseDouble(currentloc1[0]);
+                    newlg = Double.parseDouble(currentloc1[1]);
+                    moveCamera1(newl, newlg, "Current Location");
+
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+
+
+            }
+        });
+
+    }
+
+    private Timer timer;
+    private TimerTask timerTask;
+    long oldTime=0;
+    public void startTimer() {
+        timer = new Timer();
+        initializeTimerTask();
+        timer.schedule(timerTask, 6000, 10000);
+    }
+
+    public void initializeTimerTask() {
+        timerTask = new TimerTask() {
+            public void run() {
+
+                getCurrentLoc();
+
+            }
+        };
+    }
+
     private void getCurrentUser(){
 
         DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -327,8 +396,34 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback{
 
                 if( dataSnapshot != null){
 
-                   emails = dataSnapshot.child(user).child("AllChildren").child(love).getValue(String.class);
+                   emails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
                    System.out.println("I am"+ " "+emails);
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+
+
+            }
+        });
+
+    }
+
+    private void getUser(){
+
+        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users");
+        getuser.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if( dataSnapshot != null){
+
+                    newemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                    System.out.println("I am"+ " "+newemails);
 
                 }
 
