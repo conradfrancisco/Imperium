@@ -1,5 +1,7 @@
 package capstone.uic.com.imperium;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -16,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -24,7 +25,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class mainmenu extends AppCompatActivity
@@ -45,6 +45,8 @@ public class mainmenu extends AppCompatActivity
     private FirebaseAuth auth;
     private int clickedNavItem = 0;
     private DrawerLayout drawer;
+    private GeofenceService geo;
+    Intent mServiceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,8 @@ public class mainmenu extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainmenu);
         getCurrentUser();
+        geo = new GeofenceService(this);
+        mServiceIntent = new Intent(this, geo.getClass());
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         auth = FirebaseAuth.getInstance();
@@ -68,6 +72,39 @@ public class mainmenu extends AppCompatActivity
         femail = (TextView) header.findViewById(R.id.useremail);
         imageViewNav = (CircleImageView)header.findViewById(R.id.imageViewNav);
 
+        if (!isMyServiceRunning(geo.getClass())) {
+
+            startService(mServiceIntent);
+
+        }
+
+
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onStart(){
+
+        super.onStart();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        stopService(mServiceIntent);
+        super.onDestroy();
 
     }
 

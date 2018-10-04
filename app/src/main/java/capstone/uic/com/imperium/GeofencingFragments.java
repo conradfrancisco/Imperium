@@ -1,17 +1,14 @@
 package capstone.uic.com.imperium;
 
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -49,7 +47,7 @@ import java.util.TimerTask;
 public class GeofencingFragments extends Fragment implements OnMapReadyCallback {
 
     private OnFragmentInteractionListener mListener;
-    private DatabaseReference ref, ref1, ref2, ref3;
+    private DatabaseReference ref, ref1;
     private FirebaseAuth auth;
     GoogleMap maps;
     private TextView textView;
@@ -64,11 +62,10 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
     String values = "";
     String addresses = "";
     String passemails = "";
-    LatLng set;
     String lat = "";
     String lng = "";
     LatLng setloc;
-    String retrievelat = "", retrievelng = "";
+    String retrievelat = "";
     double l, lg, newl, newlg;
     String emails = "";
     String newemails = "";
@@ -96,10 +93,8 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
         save = (Button) view.findViewById(R.id.save);
         textView = (TextView) view.findViewById(R.id.selectmap);
         addresses = address.getText().toString().trim();
-        ref = FirebaseDatabase.getInstance().getReference("Users");
-        ref1 = FirebaseDatabase.getInstance().getReference("Users");
-        ref2 = FirebaseDatabase.getInstance().getReference("Users");
-        ref3 = FirebaseDatabase.getInstance().getReference("Users");
+        ref = FirebaseDatabase.getInstance().getReference();
+        ref1 = FirebaseDatabase.getInstance().getReference();
         auth = FirebaseAuth.getInstance();
         FirebaseUser users = auth.getCurrentUser();
         if (users != null) {
@@ -134,100 +129,87 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                if(dataSnapshot == null){
 
-                for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
-                    String FName = nameSnapshot.getKey();
-                    names.add(FName);
-                    System.out.println(FName);
+                    Toast.makeText(getActivity(), "No Data Retrieved!, Add a Child First", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getActivity(), mainmenu.class));
 
-                    ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
-                    namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    mapspin.setAdapter(namesAdapter);
-                    mapspin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                }
+                else {
 
-                            TextView tv = (TextView) view;
-                            values = tv.getText().toString();
-                            System.out.println("Ako si:" + " " + values);
-                            getUser();
+                    for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
+                        String FName = nameSnapshot.getKey();
+                        names.add(FName);
+                        System.out.println(FName);
 
-                            DatabaseReference getuser3 = FirebaseDatabase.getInstance().getReference().child("Users");
-                            getuser3.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
+                        ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
+                        namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        mapspin.setAdapter(namesAdapter);
+                        mapspin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                                    if (dataSnapshot != null) {
+                                TextView tv = (TextView) view;
+                                values = tv.getText().toString();
+                                System.out.println("Ako si:" + " " + values);
+                                getUser();
+                                maps.clear();
 
-                                        passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
-                                        System.out.println("I am" + " " + passemails);
+                                DatabaseReference getuser3 = FirebaseDatabase.getInstance().getReference().child("Users");
+                                getuser3.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                        DatabaseReference getuser1 = FirebaseDatabase.getInstance().getReference().child("Users");
-                                        getuser1.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot != null) {
 
-                                                if (dataSnapshot != null) {
+                                            passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                                            System.out.println("I am" + " " + passemails);
 
-                                                    retrievelat = dataSnapshot.child(user).child("Children").child(passemails).child("Location").child("Latitude").getValue(String.class);
-                                                    System.out.println("Ako diay si: " + user + " og akong email kay: " + passemails);
-                                                    System.out.println("Latitude nako kay:" + " " + retrievelat);
+                                            DatabaseReference getuser1 = FirebaseDatabase.getInstance().getReference().child("Children");
+                                            getuser1.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                                    DatabaseReference getuser2 = FirebaseDatabase.getInstance().getReference().child("Users");
-                                                    getuser2.addValueEventListener(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                    if (dataSnapshot != null) {
 
-                                                            if (dataSnapshot != null) {
-
-                                                                retrievelng = dataSnapshot.child(user).child("Children").child(passemails).child("Location").child("Longitude").getValue(String.class);
-                                                                System.out.println("Ako diay si: " + user + " og akong email kay: " + passemails);
-                                                                System.out.println("Longitude nako kay:" + " " + retrievelng);
-                                                                Double l1 = Double.parseDouble(retrievelat);
-                                                                Double l2 = Double.parseDouble(retrievelng);
-                                                                LatLng newer = new LatLng(l1, l2);
-                                                                moveCamera(newer, "Saved Location");
-
-                                                            }
-
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(DatabaseError databaseError) {
-
-
-                                                        }
-                                                    });
+                                                        retrievelat = dataSnapshot.child(user).child(passemails).child("SavedLocation").getValue(String.class);
+                                                        System.out.println("The Saved Location is: "+retrievelat);
+                                                        String split[] = retrievelat.split(",");
+                                                        Double l1 = Double.parseDouble(split[0]);
+                                                        Double l2 = Double.parseDouble(split[1]);
+                                                        LatLng newer = new LatLng(l1, l2);
+                                                        moveCamera(newer, "Saved Location");
+                                                    }
 
                                                 }
 
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
 
 
-                                            }
-                                        });
+                                                }
+                                            });
+
+                                        }
 
                                     }
 
-                                }
-
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
 
 
-                                }
-                            });
+                                    }
+                                });
 
-                        }
+                            }
 
-                        @Override
-                        public void onNothingSelected(AdapterView<?> adapterView) {
+                            @Override
+                            public void onNothingSelected(AdapterView<?> adapterView) {
 
-                        }
-                    });
+                            }
+                        });
+                    }
+
                 }
 
             }
@@ -289,8 +271,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
                 setloc = new LatLng(l,lg);
                 moveCamera(setloc, "Set Location");
                 System.out.println("Latitude:"+lat+ "and Longitude:"+lng+ ","+"User:"+user+" and Email is:"+emails);
-                ref2.child(user).child("Children").child(emails).child("Location").child("Latitude").setValue(lat);
-                ref3.child(user).child("Children").child(emails).child("Location").child("Longitude").setValue(lng);
+                ref.child("Children").child(user).child(emails).child("SavedLocation").setValue(lat+","+lng);
 
                 if(dialog.isShowing())
                     dialog.dismiss();
@@ -342,16 +323,22 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if( dataSnapshot != null){
+                if(dataSnapshot != null){
 
                     System.out.println("Newemails: "+newemails);
-                    currentloc = dataSnapshot.child(newemails).child("CurrentLocation").getValue(String.class);
+                    currentloc = dataSnapshot.child(user).child(newemails).child("CurrentLocation").getValue(String.class);
                     System.out.println("Current Location"+ " "+currentloc);
                     currentloc1 = currentloc.split(",");
                     newl = Double.parseDouble(currentloc1[0]);
                     newlg = Double.parseDouble(currentloc1[1]);
                     moveCamera1(newl, newlg, "Current Location");
 
+
+                }
+
+                else {
+
+                    Toast.makeText(getContext(), "No Current Location Data recieved!", Toast.LENGTH_SHORT).show();
 
                 }
 
@@ -373,7 +360,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
     public void startTimer() {
         timer = new Timer();
         initializeTimerTask();
-        timer.schedule(timerTask, 6000, 10000);
+        timer.schedule(timerTask, 5000, 10000);
     }
 
     public void initializeTimerTask() {

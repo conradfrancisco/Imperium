@@ -94,33 +94,38 @@ public class ChildActivitiesFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                if(dataSnapshot != null){
 
-                for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
 
-                    String FName = nameSnapshot.getKey();
-                    names.add(FName);
-                    System.out.println(FName);
+                    for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
+
+                        String FName = nameSnapshot.getKey();
+                        names.add(FName);
+                        System.out.println(FName);
+
+                    }
+
+                    ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
+                    namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinname.setAdapter(namesAdapter);
+                    spinname.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+                            TextView tv = (TextView)view;
+                            values = tv.getText().toString();
+                            System.out.println(values);
+
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> adapterView) {
+
+                        }
+                    });
+
 
                 }
-
-                ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
-                namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinname.setAdapter(namesAdapter);
-                spinname.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
-                        TextView tv = (TextView)view;
-                        values = tv.getText().toString();
-                        System.out.println(values);
-
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> adapterView) {
-
-                    }
-                });
 
             }
 
