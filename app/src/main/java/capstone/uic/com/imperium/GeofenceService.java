@@ -34,14 +34,11 @@ public class GeofenceService extends Service {
     String childuser = "";
     String passval = "";
     String useremail = "";
-    int z = 0;
-    int y  = 0;
     Double lat1, lat2, lng1, lng2;
     String currentloc = "", savedloc = "";
-    List<String> names = new ArrayList<>();
-    private Timer timer, timer1;
-    private TimerTask timerTask, timerTask1;
-    long oldTime=0, oldTime1=0;
+    private Timer timer;
+    private TimerTask timerTask;
+    long oldTime=0;
 
     public GeofenceService() {
 
@@ -58,17 +55,23 @@ public class GeofenceService extends Service {
 
         super.onStartCommand(intent, flags, startId);
         getCurrentUser();
-        startTimer();
 
         return START_STICKY;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Intent broadcastIntent = new Intent("GeoRestart");
+        sendBroadcast(broadcastIntent);
+        stoptimertask();
+    }
+
     public void startTimer() {
 
-        startTimer1();
         timer = new Timer();
         initializeTimerTask();
-        timer.schedule(timerTask, 10000, 10000);
+        timer.schedule(timerTask, 5000, 5000);
 
     }
 
@@ -76,27 +79,11 @@ public class GeofenceService extends Service {
         timerTask = new TimerTask() {
             public void run() {
 
-                looper();
-
-            }
-        };
-    }
-
-    public void startTimer1() {
-        timer1 = new Timer();
-        initializeTimerTask1();
-        timer1.schedule(timerTask1, 30000, 60000);
-    }
-
-    public void initializeTimerTask1() {
-        timerTask1 = new TimerTask() {
-            public void run() {
-
                 getCurrentChildUser();
-
             }
         };
     }
+
 
     public void getCurrentChildUser() {
 
@@ -105,23 +92,42 @@ public class GeofenceService extends Service {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                if(dataSnapshot != null){
 
-                    if(childSnapshot != null){
+                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
 
-                        names.add(childSnapshot.getKey());
-                        y = names.size();
-
-                    }
-
-                    else {
-
-                        Toast.makeText(getApplicationContext(), "Please add a child to monitor first!", Toast.LENGTH_SHORT).show();
+                        childuser = childSnapshot.getKey();
+                        getCurrentLoc(childuser);
 
                     }
 
+                }
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
 
 
+    public void getCurrentLoc(final String childuser){
+
+        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
+        getuser.child(user).child(childuser).child("CurrentLocation").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot != null) {
+
+                    currentloc = dataSnapshot.getValue(String.class);
+                    System.out.println("Current Location: " + currentloc);
+                    String split[] = currentloc.split(",");
+                    lat1 = Double.parseDouble(split[0]);
+                    lng1 = Double.parseDouble(split[1]);
+                    System.out.println("Current Latitude: " + lat1 + " and Current Longitude: " + lng1);
+                    getSavedLoc(childuser);
                 }
             }
 
@@ -132,95 +138,47 @@ public class GeofenceService extends Service {
         });
     }
 
-    public void looper(){
+    public void getSavedLoc(String childuser){
 
-        childuser = names.get(z);
-        if (childuser != null){
+        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
+        getuser.child(user).child(childuser).child("SavedLocation").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
-            System.out.println(childuser);
+                if (dataSnapshot != null) {
 
-            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
-            getuser.child(user).child(childuser).child("CurrentLocation").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
+                    savedloc = dataSnapshot.getValue(String.class);
+                    System.out.println("Saved Location: " + savedloc);
+                    String split[] = savedloc.split(",");
+                    lat2 = Double.parseDouble(split[0]);
+                    lng2 = Double.parseDouble(split[1]);
+                    System.out.println("Saved Latitude: " + lat2 + " and Saved Longitude: " + lng2);
+                    double earthRadius = 6371;
+                    double dlat = Math.toRadians(lat2 - lat1);
+                    double dlng = Math.toRadians(lng2 - lng1);
 
-                    if(dataSnapshot != null){
+                    double a = Math.sin(dlat/2) * Math.sin(dlat/2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dlng/2) * Math.sin(dlng/2);
+                    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-                        currentloc = dataSnapshot.getValue(String.class);
-                        System.out.println("Current Location: "+currentloc);
-                        String split[] = currentloc.split(",");
-                        lat1 = Double.parseDouble(split[0]);
-                        lng1 = Double.parseDouble(split[1]);
-                        System.out.println("Current Latitude: "+lat1+" and Current Longitude: "+lng1);
-                        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
-                        getuser.child(user).child(childuser).child("SavedLocation").addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
+                    double distance = earthRadius * c * 1000;
 
-                                if (dataSnapshot != null) {
+                    if (distance > 100){
 
-                                    savedloc = dataSnapshot.getValue(String.class);
-                                    System.out.println("Saved Location: " + savedloc);
-                                    String split[] = savedloc.split(",");
-                                    lat2 = Double.parseDouble(split[0]);
-                                    lng2 = Double.parseDouble(split[1]);
-                                    System.out.println("Saved Latitude: " + lat2 + " and Saved Longitude: " + lng2);
-                                    double earthRadius = 6371;
-                                    double dlat = Math.toRadians(lat2 - lat1);
-                                    double dlng = Math.toRadians(lng2 - lng1);
-
-                                    double a = Math.sin(dlat/2) * Math.sin(dlat/2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dlng/2) * Math.sin(dlng/2);
-                                    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-                                    double distance = earthRadius * c * 1000;
-
-                                    if (distance > 100){
-
-                                        notifs();
-                                    }
-
-                                    System.out.println("The distance is: "+distance);
-                                    if(z == (y-1)){
-
-                                        z = 0;
-                                    }
-                                    else {
-
-                                        z++;
-                                    }
-                                }
-
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-
+                        notifs();
                     }
 
+                    System.out.println("The distance is: "+distance);
                 }
+            }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
 
 
-                }
-            });
-
-        }
-        else {
-
-            z = 0;
-            Toast.makeText(getApplicationContext(), "No child data has been retrieved!", Toast.LENGTH_SHORT).show();
-
-        }
-
+            }
+        });
     }
-
-
 
     public void getCurrentUser(){
 
@@ -233,12 +191,12 @@ public class GeofenceService extends Service {
 
                     user = dataSnapshot.getValue(String.class);
                     System.out.println("Current Parent User: "+user);
-                    getCurrentChildUser();
+                    startTimer();
                 }
                 else {
 
-                    Toast.makeText(getApplicationContext(), "Please create your account @ Imperium!", Toast.LENGTH_SHORT).show();
-
+                    Toast.makeText(getApplicationContext(), "Please create your account @ Imperium!", Toast.LENGTH_LONG).show();
+                    stoptimertask();
                 }
 
             }
@@ -277,6 +235,13 @@ public class GeofenceService extends Service {
 
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notifs);
+    }
+
+    public void stoptimertask() {
+        if ((timer != null)){
+            timer.cancel();
+            timer = null;
+        }
     }
 
     @Nullable

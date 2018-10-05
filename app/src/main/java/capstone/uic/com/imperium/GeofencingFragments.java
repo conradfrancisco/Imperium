@@ -1,14 +1,17 @@
 package capstone.uic.com.imperium;
 
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.IntentCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -88,6 +91,15 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+//        PackageManager pm = getActivity().getPackageManager();
+//        ComponentName comp = new ComponentName(getActivity(), GeofenceService.class);
+//        pm.setComponentEnabledSetting(comp, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+//
+//        PackageManager pm1 = getActivity().getPackageManager();
+//        ComponentName comp1 = new ComponentName(getActivity(), GeofenceReciever.class);
+//        pm1.setComponentEnabledSetting(comp1, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+
         mapspin = (Spinner) view.findViewById(R.id.mapspin);
         address = (EditText) view.findViewById(R.id.address);
         save = (Button) view.findViewById(R.id.save);

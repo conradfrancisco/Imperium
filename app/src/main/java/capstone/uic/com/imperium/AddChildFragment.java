@@ -32,7 +32,7 @@ public class AddChildFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     private OnFragmentInteractionListener mListener;
     private ProgressBar progress;
-    private DatabaseReference ref, ref1, ref2, ref3;
+    private DatabaseReference ref, ref1, ref2, ref3, ref4, ref5;
     private String textmessage = "*G DRIVE LINK OF IMPERIUM CHILD APP TO BE INSERTED*";
     private String subjected = "Welcome to Imperium: A Parental Control Application";
     private String username = "noreply.ImperiumMonitoring@gmail.com";
@@ -93,6 +93,8 @@ public class AddChildFragment extends Fragment {
         ref1 = FirebaseDatabase.getInstance().getReference("Users");
         ref2 = FirebaseDatabase.getInstance().getReference("Users");
         ref3 = FirebaseDatabase.getInstance().getReference();
+        ref4 = FirebaseDatabase.getInstance().getReference();
+        ref5 = FirebaseDatabase.getInstance().getReference();
         getCurrentUser();
 
         save1.setOnClickListener(new View.OnClickListener() {
