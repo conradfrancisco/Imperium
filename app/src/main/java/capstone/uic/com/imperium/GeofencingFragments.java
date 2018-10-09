@@ -92,13 +92,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-//        PackageManager pm = getActivity().getPackageManager();
-//        ComponentName comp = new ComponentName(getActivity(), GeofenceService.class);
-//        pm.setComponentEnabledSetting(comp, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-//
-//        PackageManager pm1 = getActivity().getPackageManager();
-//        ComponentName comp1 = new ComponentName(getActivity(), GeofenceReciever.class);
-//        pm1.setComponentEnabledSetting(comp1, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+
 
         mapspin = (Spinner) view.findViewById(R.id.mapspin);
         address = (EditText) view.findViewById(R.id.address);

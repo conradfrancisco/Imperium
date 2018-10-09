@@ -13,6 +13,12 @@
             android:id="@+id/add"
             android:icon="@drawable/addchild"
             android:title="Add New Child" />
+
+        <item
+            android:id="@+id/device"
+            android:icon="@drawable/childdevice"
+            android:title="Child Device" />
+
         <item
             android:id="@+id/activities"
             android:icon="@drawable/basketball"

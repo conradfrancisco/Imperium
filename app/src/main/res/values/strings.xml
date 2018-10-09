@@ -16,8 +16,7 @@
     <string name="addname">Full Name</string>
     <string name="addemail">Email Address</string>
     <string name="ChildActivities">Please Select Child to Monitor Activties</string>
+    <string name="ChildDevice">Please Select Child to Monitor Device</string>
     <string name="MapActivities">Please Select Child to Monitor Location</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_maps">Map</string>
 </resources>

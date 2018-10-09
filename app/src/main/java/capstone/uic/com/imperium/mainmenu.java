@@ -32,6 +32,7 @@ public class mainmenu extends AppCompatActivity
                     ProfileFragment.OnFragmentInteractionListener,
                     AddChildFragment.OnFragmentInteractionListener,
                     GeofencingFragments.OnFragmentInteractionListener,
+                    ChildDeviceFragment.OnFragmentInteractionListener,
                     ChildActivitiesFragment.OnFragmentInteractionListener
     {
 
@@ -78,6 +79,10 @@ public class mainmenu extends AppCompatActivity
 
         }
 
+        ProfileFragment p = new ProfileFragment();
+        FragmentManager f = getSupportFragmentManager();
+        f.beginTransaction().replace(R.id.mainLayout, p).commit();
+
 
     }
 
@@ -114,15 +119,6 @@ public class mainmenu extends AppCompatActivity
 
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
 
     @Override
     public void onFragmentInteraction(Uri uri){
@@ -147,7 +143,7 @@ public class mainmenu extends AppCompatActivity
 
             ProfileFragment p = new ProfileFragment();
             FragmentManager f = getSupportFragmentManager();
-            f.beginTransaction().replace(R.id.mainLayout, p).commit();
+            f.beginTransaction().replace(R.id.mainLayout, p).addToBackStack(null).commit();
 
         }
 
@@ -155,7 +151,15 @@ public class mainmenu extends AppCompatActivity
 
             AddChildFragment p = new AddChildFragment();
             FragmentManager f = getSupportFragmentManager();
-            f.beginTransaction().replace(R.id.mainLayout, p).commit();
+            f.beginTransaction().replace(R.id.mainLayout, p).addToBackStack(null).commit();
+
+        }
+
+        else if (id == R.id.device){
+
+            ChildDeviceFragment p = new ChildDeviceFragment();
+            FragmentManager f = getSupportFragmentManager();
+            f.beginTransaction().replace(R.id.mainLayout, p).addToBackStack(null).commit();
 
         }
 
@@ -163,7 +167,7 @@ public class mainmenu extends AppCompatActivity
 
             ChildActivitiesFragment p = new ChildActivitiesFragment();
             FragmentManager f = getSupportFragmentManager();
-            f.beginTransaction().replace(R.id.mainLayout, p).commit();
+            f.beginTransaction().replace(R.id.mainLayout, p).addToBackStack(null).commit();
 
         }
 
@@ -176,7 +180,7 @@ public class mainmenu extends AppCompatActivity
 
             GeofencingFragments p = new GeofencingFragments();
             FragmentManager f = getSupportFragmentManager();
-            f.beginTransaction().replace(R.id.mainLayout, p).commit();
+            f.beginTransaction().replace(R.id.mainLayout, p).addToBackStack(null).commit();
 
 
         }
@@ -323,10 +327,29 @@ public class mainmenu extends AppCompatActivity
 
     }
 
+    @Override
+    public void onBackPressed() {
+
+        int count = getSupportFragmentManager().getBackStackEntryCount();
+
+            if (count == 0) {
+
+                super.onBackPressed();
+
+            }
+
+            else {
+
+                getSupportFragmentManager().popBackStack();
+            }
+
+        }
+
     public String getUsernames() {
 
         return this.user;
     }
+
     public void signOut() {
 
         auth.signOut();
