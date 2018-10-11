@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,9 +111,18 @@ public class ChildDeviceFragment extends Fragment {
 
                     for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
 
-                        String FName = nameSnapshot.getKey();
-                        names.add(FName);
-                        System.out.println(FName);
+                        if(nameSnapshot!=null){
+
+                            String FName = nameSnapshot.getKey();
+                            names.add(FName);
+                            System.out.println(FName);
+
+                        }
+                        else{
+
+                            Toast.makeText(getActivity(), "No child has been added yet!", Toast.LENGTH_LONG).show();
+
+                        }
 
                     }
 
@@ -134,52 +144,72 @@ public class ChildDeviceFragment extends Fragment {
                                     if(dataSnapshot != null){
 
                                         passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
-                                        System.out.println("I am" + " " + passemails);
-                                        ref2 = FirebaseDatabase.getInstance().getReference("Users");
-                                        ref2.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        try{
 
-                                                if(dataSnapshot != null){
+                                            System.out.println("I am" + " " + passemails);
+                                            ref2 = FirebaseDatabase.getInstance().getReference("Users");
+                                            ref2.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                                    String val = dataSnapshot.child(user).child("Children").child(passemails).child("BlockDevice").getValue(String.class);
-                                                    if(val.equals("1")){
+                                                    if(dataSnapshot != null){
 
-                                                        childname.setVisibility(View.VISIBLE);
-                                                        status.setVisibility(View.VISIBLE);
-                                                        childname.setText("Your child, " +values+ "'s device is currently:");
-                                                        status.setText("BLOCKED");
-                                                        disable.setVisibility(View.VISIBLE);
-                                                        enable.setVisibility(View.GONE);
+                                                        String val = dataSnapshot.child(user).child("Children").child(passemails).child("BlockDevice").getValue(String.class);
+                                                        if(val!=null){
+
+                                                            if(val.equals("1")){
+
+                                                                childname.setVisibility(View.VISIBLE);
+                                                                status.setVisibility(View.VISIBLE);
+                                                                childname.setText("Your child, " +values+ "'s device is currently:");
+                                                                status.setText("BLOCKED");
+                                                                disable.setVisibility(View.VISIBLE);
+                                                                enable.setVisibility(View.GONE);
+
+                                                            }
+                                                            else if (val.equals("0")){
+
+
+                                                                childname.setVisibility(View.VISIBLE);
+                                                                status.setVisibility(View.VISIBLE);
+                                                                childname.setText("Your child, " +values+ "'s device is currently:");
+                                                                status.setText("UNBLOCKED");
+                                                                enable.setVisibility(View.VISIBLE);
+                                                                disable.setVisibility(View.GONE);
+
+                                                            }
+
+                                                        }
+                                                        else{
+
+                                                            Toast.makeText(getActivity(), "No data has been specified!", Toast.LENGTH_LONG).show();
+
+                                                        }
+
 
                                                     }
-                                                    else if (val.equals("0")){
 
+                                                    else {
 
-                                                        childname.setVisibility(View.VISIBLE);
-                                                        status.setVisibility(View.VISIBLE);
-                                                        childname.setText("Your child, " +values+ "'s device is currently:");
-                                                        status.setText("UNBLOCKED");
-                                                        enable.setVisibility(View.VISIBLE);
-                                                        disable.setVisibility(View.GONE);
+                                                        Toast.makeText(getActivity(), "No data retrieved!", Toast.LENGTH_LONG).show();
 
                                                     }
 
                                                 }
 
-                                                else {
-
-                                                    Toast.makeText(getActivity(), "No data retrieved!", Toast.LENGTH_LONG).show();
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                                                 }
+                                            });
+                                        }
 
-                                            }
+                                        catch(Exception e){
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            Log.e("New Pin Registration", e.getMessage(), e);
 
-                                            }
-                                        });
+                                        }
+
 
                                     }
 
@@ -229,8 +259,19 @@ public class ChildDeviceFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                ref3 = FirebaseDatabase.getInstance().getReference("Users");
-                ref3.child(user).child("Children").child(passemails).child("BlockDevice").setValue("0");
+                try{
+
+                    ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                    ref3.child(user).child("Children").child(passemails).child("BlockDevice").setValue("0");
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("New Pin Registration", e.getMessage(), e);
+
+                }
+
 
             }
         });
@@ -239,8 +280,19 @@ public class ChildDeviceFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                ref3 = FirebaseDatabase.getInstance().getReference("Users");
-                ref3.child(user).child("Children").child(passemails).child("BlockDevice").setValue("1");
+                try{
+
+                    ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                    ref3.child(user).child("Children").child(passemails).child("BlockDevice").setValue("1");
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("New Pin Registration", e.getMessage(), e);
+
+                }
+
 
             }
         });

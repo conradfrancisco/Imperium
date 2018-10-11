@@ -12,6 +12,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -263,31 +266,43 @@ public class ProfileFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
-                && data != null && data.getData() != null) {
-            mImageUri = data.getData();
-            circleImageView.setImageURI(mImageUri);
+        try{
+
+            if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
+                    && data != null && data.getData() != null) {
+                mImageUri = data.getData();
+                circleImageView.setImageURI(mImageUri);
+
+            }
+            if (uploadTask != null && uploadTask.isInProgress()) {
+
+                Snackbar sn = Snackbar.make(getView(), "Upload in Progress", Snackbar.LENGTH_LONG);
+                sn.show();
+
+            }
+
+            else {
+
+                progress.setVisibility(View.VISIBLE);
+                uploadFile();
+
+            }
+        }
+
+        catch(Exception e){
+
+            Log.e("ActivityResult", e.getMessage(), e);
 
         }
-        if (uploadTask != null && uploadTask.isInProgress()) {
 
-            Snackbar sn = Snackbar.make(getView(), "Upload in Progress", Snackbar.LENGTH_LONG);
-            sn.show();
-
-        }
-
-        else {
-
-            progress.setVisibility(View.VISIBLE);
-            uploadFile();
-
-        }
     }
     public String getFileExtension(Uri uri) {
+
         ContentResolver cR = getActivity().getContentResolver();
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         System.out.println(mime.getExtensionFromMimeType(cR.getType(uri)));
         return mime.getExtensionFromMimeType(cR.getType(uri));
+
     }
 
     private void getUrl(){
@@ -299,9 +314,33 @@ public class ProfileFragment extends Fragment {
 
                 if( dataSnapshot != null){
 
-                    urladd = dataSnapshot.getValue(String.class);
-                    System.out.println(urladd);
-                    Glide.with(getActivity()).load(urladd).into(circleImageView);
+                    try{
+
+                        String urladdz = dataSnapshot.getValue(String.class);
+                        if(urladdz!=null){
+
+                            urladd = urladdz;
+                            System.out.println(urladd);
+                            Glide.with(getActivity()).load(urladd).into(circleImageView);
+                        }
+
+                        else{
+
+                            Toast.makeText(getActivity(), "URL is EMPTY", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("No URLS found", e.getMessage(), e);
+
+                    }
+
+
+                }
+                else {
+
+                    Toast.makeText(getActivity(), "URL is EMPTY", Toast.LENGTH_SHORT).show();
 
                 }
 
@@ -319,60 +358,77 @@ public class ProfileFragment extends Fragment {
 
     private void setUserFullName(String newname){
 
-        ref1.child(user).child("fullname").setValue(newname);
+        try{
 
+            ref1.child(user).child("fullname").setValue(newname);
+        }
+
+        catch(Exception e){
+
+            Log.e("SetUserFName", e.getMessage(), e);
+        }
     }
 
     private void uploadFile(){
 
-        if(mImageUri != null){
+        try{
 
-            final StorageReference fileReference = up.child(user + "." + getFileExtension(mImageUri));
+            if(mImageUri != null){
 
-            uploadTask = fileReference.putFile(mImageUri);
-            Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                final StorageReference fileReference = up.child(user + "." + getFileExtension(mImageUri));
 
-                @Override
-                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                    if (!task.isSuccessful()) {
+                uploadTask = fileReference.putFile(mImageUri);
+                Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
 
-                        throw Objects.requireNonNull(task.getException());
+                    @Override
+                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                        if (!task.isSuccessful()) {
+
+                            throw Objects.requireNonNull(task.getException());
+                        }
+
+                        return fileReference.getDownloadUrl();
                     }
+                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+                        if (task.isSuccessful()) {
 
-                    return fileReference.getDownloadUrl();
-                }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-                @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()) {
+                            progress.setVisibility(View.GONE);
+                            Uri downloadUri = task.getResult();
+                            String miUrlOk = downloadUri.toString();
 
-                        progress.setVisibility(View.GONE);
-                        Uri downloadUri = task.getResult();
-                        String miUrlOk = downloadUri.toString();
+                            UploadImage upload = new UploadImage(user, miUrlOk);
+                            ref.child(user).child("ProfilePicture").setValue(upload);
+                            getUrl();
+                            startActivity(new Intent(getActivity(), mainmenu.class));
 
-                        UploadImage upload = new UploadImage(user, miUrlOk);
-                        ref.child(user).child("ProfilePicture").setValue(upload);
-                        getUrl();
-                        startActivity(new Intent(getActivity(), mainmenu.class));
+                        }
+
+                        else {
+
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
 
                     }
+                });
 
-                    else {
+            }
+            else {
 
-                    }
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(), "Image is not Found!", Toast.LENGTH_SHORT).show();
 
-                }
-            });
-
+            }
         }
 
-        else {
+        catch(Exception e){
 
+            Log.e("UploadFile", e.getMessage(), e);
         }
+
     }
 
 
@@ -385,9 +441,28 @@ public class ProfileFragment extends Fragment {
 
                 if( dataSnapshot != null){
 
-                    user = dataSnapshot.getValue(String.class);
-                    getName();
+                    try{
 
+                        String userz = dataSnapshot.getValue(String.class);
+                        if(userz!=null){
+
+                            user = userz;
+                            getName();
+
+                        }
+                        else{
+
+                            Toast.makeText(getActivity(), "Current User is not Found!", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("CurrentUser", e.getMessage(), e);
+
+                    }
                 }
 
             }
@@ -411,8 +486,26 @@ public class ProfileFragment extends Fragment {
 
                 if(dataSnapshot != null){
 
-                    namez = dataSnapshot.getValue(String.class);
-                    getEmail();
+                    try{
+
+                        String namez1 = dataSnapshot.getValue(String.class);
+                        if(namez1!=null){
+
+                            namez = namez1;
+                            getEmail();
+                        }
+                        else{
+
+                            Toast.makeText(getActivity(), "Name is not Found!", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("GetName", e.getMessage(), e);
+
+                    }
 
                 }
 
@@ -435,8 +528,28 @@ public class ProfileFragment extends Fragment {
 
                 if(dataSnapshot != null){
 
-                    namezz = dataSnapshot.getValue(String.class);
-                    name2.setText(namezz);
+                    try{
+
+
+                        String namezz1 = dataSnapshot.getValue(String.class);
+                        if(namezz1!=null){
+
+                            namezz = namezz1;
+                            name2.setText(namezz);
+                        }
+                        else {
+
+
+                            Toast.makeText(getActivity(), "Name is not Found!", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("Refresh", e.getMessage(), e);
+
+                    }
 
                 }
 
@@ -459,11 +572,32 @@ public class ProfileFragment extends Fragment {
 
                 if(dataSnapshot != null){
 
-                    email = dataSnapshot.getValue(String.class);
-                    System.out.println(user);
-                    name2.setText(namez);
-                    email2.setText(email);
-                    getUrl();
+                    try{
+
+                        String emaild = dataSnapshot.getValue(String.class);
+                        if(emaild!=null){
+
+                            email = emaild;
+                            System.out.println(user);
+                            name2.setText(namez);
+                            email2.setText(email);
+                            getUrl();
+
+                        }
+                        else{
+
+                            Toast.makeText(getActivity(), "Email is not Found!", Toast.LENGTH_SHORT).show();
+
+                        }
+
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("Emails", e.getMessage(), e);
+
+                    }
 
                 }
 

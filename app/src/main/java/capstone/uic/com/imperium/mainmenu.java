@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -232,10 +233,30 @@ public class mainmenu extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                if( dataSnapshot != null){
+                if(dataSnapshot != null){
 
-                    urladd = dataSnapshot.getValue(String.class);
-                    Glide.with(mainmenu.this).load(urladd).into(imageViewNav);
+                    String urladds = dataSnapshot.getValue(String.class);
+                    try{
+
+                        if(urladds!=null){
+
+                            urladd = urladds;
+                            Glide.with(mainmenu.this).load(urladd).into(imageViewNav);
+
+                        }
+                        else{
+
+                            Toast.makeText(getApplicationContext(), "No Image Found!", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("New Pin Registration", e.getMessage(), e);
+
+                    }
 
                 }
 
@@ -258,10 +279,31 @@ public class mainmenu extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                if( dataSnapshot != null){
+                if(dataSnapshot != null){
 
-                    user = dataSnapshot.getValue(String.class);
-                    getName();
+                    String users = dataSnapshot.getValue(String.class);
+                    try{
+
+                        if(users!=null){
+
+                            user = users;
+                            getName();
+
+                        }
+
+                        else {
+
+                            Toast.makeText(getApplicationContext(), "No Current User Found!", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("New Pin Registration", e.getMessage(), e);
+
+                    }
 
                 }
 
@@ -286,8 +328,29 @@ public class mainmenu extends AppCompatActivity
 
                 if(dataSnapshot != null){
 
-                    name = dataSnapshot.getValue(String.class);
-                    getEmail();
+                    String namea = dataSnapshot.getValue(String.class);
+                    try{
+
+                        if(namea!=null){
+
+                            name = namea;
+                            getEmail();
+
+                        }
+
+                        else{
+
+                            Toast.makeText(getApplicationContext(), "Name was not found!", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("New Pin Registration", e.getMessage(), e);
+
+                    }
 
                 }
 
@@ -311,13 +374,33 @@ public class mainmenu extends AppCompatActivity
 
                 if(dataSnapshot != null){
 
-                    email = dataSnapshot.getValue(String.class);
-                    System.out.println(user);
-                    System.out.println(name);
-                    System.out.println(email);
-                    getProfile();
-                    fname.setText(name);
-                    femail.setText(email);
+                    String emailz = dataSnapshot.getValue(String.class);
+                    try{
+
+                        if(emailz!=null){
+
+                            email = emailz;
+                            System.out.println(user);
+                            System.out.println(name);
+                            System.out.println(email);
+                            getProfile();
+                            fname.setText(name);
+                            femail.setText(email);
+
+                        }
+
+                        else {
+
+                            Toast.makeText(getApplicationContext(), "No Email Address was found!", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("New Pin Registration", e.getMessage(), e);
+
+                    }
 
                 }
 

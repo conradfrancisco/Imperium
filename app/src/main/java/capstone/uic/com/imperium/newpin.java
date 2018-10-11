@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -91,23 +92,40 @@ public class newpin extends AppCompatActivity {
                 pb.setVisibility(View.VISIBLE);
                 cpin = pinView1.getValue();
 
-                    if(pin.equals(cpin)){
+                    try{
 
-                        System.out.println(pin);
-                        pb.setVisibility(View.GONE);
-                        databaseReference.child(user).child("Pin").setValue(pin);
-                        databaseReference.child(user).child("pin").setValue("Old");
-                        Toast.makeText(newpin.this, "PIN Registration Successful!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(newpin.this, mainmenu.class));
-                        finish();
+                        if(pin.equals(cpin)){
+
+                            System.out.println(pin);
+                            pb.setVisibility(View.GONE);
+                            databaseReference.child(user).child("Pin").setValue(pin);
+                            databaseReference.child(user).child("pin").setValue("Old");
+                            Toast.makeText(newpin.this, "PIN Registration Successful!", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(newpin.this, mainmenu.class));
+                            finish();
+                        }
+
+                        else if (!pin.equals(cpin)){
+
+                            Toast.makeText(newpin.this, "PIN does NOT MATCH!!", Toast.LENGTH_SHORT).show();
+                            instruction.setText("Please ENTER your NEW PIN");
+
+                        }
+
+                        else {
+
+                            Toast.makeText(newpin.this, "PIN does NOT MATCH!!", Toast.LENGTH_SHORT).show();
+
+                        }
+
                     }
 
-                    else if (!pin.equals(cpin)){
+                    catch(Exception e){
 
-                        Toast.makeText(newpin.this, "PIN does NOT MATCH!!", Toast.LENGTH_SHORT).show();
-                        instruction.setText("Please ENTER your NEW PIN");
+                        Log.e("New Pin Registration", e.getMessage(), e);
 
                     }
+
 
             }
         });
@@ -123,8 +141,18 @@ public class newpin extends AppCompatActivity {
 
                 if( dataSnapshot != null){
 
-                    user = dataSnapshot.getValue(String.class);
-                    System.out.println(user);
+                    String users = dataSnapshot.getValue(String.class);
+                    if(users!=null){
+
+                        user = users;
+                        System.out.println(user);
+
+                    }
+                    else{
+
+                        Toast.makeText(newpin.this, "No Current User Retrieved", Toast.LENGTH_SHORT).show();
+
+                    }
 
                 }
 

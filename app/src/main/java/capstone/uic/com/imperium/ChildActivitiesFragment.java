@@ -1,11 +1,15 @@
 package capstone.uic.com.imperium;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +41,7 @@ public class ChildActivitiesFragment extends Fragment {
     private ArrayAdapter<String> arrayAdapterCrimes;
     private String mParam1;
     private FirebaseAuth auth;
-    private DatabaseReference ref1, ref2;
+    private DatabaseReference ref1, ref2, ref3, ref4;
     private String mParam2;
     private Spinner spinname;
     String passemails = "";
@@ -85,7 +89,7 @@ public class ChildActivitiesFragment extends Fragment {
         spinname = (Spinner) view.findViewById(R.id.namespin);
         listViewApps = (ListView) view.findViewById(R.id.listview);
         auth = FirebaseAuth.getInstance();
-        FirebaseUser users = auth.getCurrentUser();
+        final FirebaseUser users = auth.getCurrentUser();
         if(users!=null){
 
             email = users.getEmail();
@@ -106,9 +110,26 @@ public class ChildActivitiesFragment extends Fragment {
 
                     for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
 
-                        String FName = nameSnapshot.getKey();
-                        names.add(FName);
-                        System.out.println(FName);
+                        try{
+
+                            if(nameSnapshot!=null){
+
+                                String FName = nameSnapshot.getKey();
+                                names.add(FName);
+                                System.out.println(FName);
+                            }
+                            else{
+
+                                Toast.makeText(getActivity(), "No child has been added yet!", Toast.LENGTH_LONG).show();
+                            }
+
+                        }
+
+                        catch(Exception e){
+
+                            Log.e("New Pin Registration", e.getMessage(), e);
+
+                        }
 
                     }
 
@@ -150,6 +171,11 @@ public class ChildActivitiesFragment extends Fragment {
                                                                 System.out.println(AName);
 
                                                             }
+                                                            else{
+
+                                                                Toast.makeText(getActivity(), "No Application has been retrieve.", Toast.LENGTH_LONG).show();
+
+                                                            }
                                                             arrayAdapterCrimes = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, apps);
                                                             listViewApps.setAdapter(arrayAdapterCrimes);
                                                         }
@@ -162,6 +188,11 @@ public class ChildActivitiesFragment extends Fragment {
 
                                                 }
                                             });
+
+                                        }
+                                        else{
+
+                                            Toast.makeText(getActivity(), "No Children has been retrieved!", Toast.LENGTH_LONG).show();
 
                                         }
 
@@ -209,16 +240,115 @@ public class ChildActivitiesFragment extends Fragment {
 
 
         });
+
         listViewApps.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                String appn = (String) listViewApps.getItemAtPosition(i);
-                Toast.makeText(getActivity(), appn, Toast.LENGTH_LONG).show();
+                final String appname = (String) listViewApps.getItemAtPosition(i);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Block Application Usage");
+                builder.setMessage("Please choose action.");
+                builder.setIcon(R.drawable.icon);
+                builder.setPositiveButton("Block Now", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        if(appname.equals("Facebook")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.facebook.katana");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+
+                        }
+                        else if(appname.equals("Instagram")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.instagram.android");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+                        }
+                        else if(appname.equals("Chrome")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.android,chrome");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+                        }
+                        else if(appname.equals("Youtube")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.google.android.youtube");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+
+                        }
+                        else if(appname.equals("Twitter")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.twitter.android");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+
+                        }
+                        else if(appname.equals("Messenger")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.facebook.orca");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+
+                        }
+                        else if(appname.equals("Clash of Clans")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.supercell.clashofclans");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+
+                        }
+                        else if(appname.equals("Rise of Civilizations")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.lilithgame.roc.gp");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+
+                        }
+                        else if(appname.equals("Dragon Nest M - SEA（Dark Avenger")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.playfungame.ggplay.lzgsea");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+
+                        }
+                        else if(appname.equals("Mobile Legends: Bang Bang")){
+
+                            ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.mobile.legends");
+                            startActivity(new Intent(getActivity(), mainmenu.class));
+                        }
+                        else{
+
+                            Toast.makeText(getActivity(), "Application Not Supported!", Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                });
+                builder.setNegativeButton("Unblock Now", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                        ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                        ref3.child(user).child("Children").child(passemails).child("BlockedApps").removeValue();
+                        startActivity(new Intent(getActivity(), mainmenu.class));
+
+
+                    }
+                });
+                android.support.v7.app.AlertDialog alert = builder.create();
+                alert.show();
+
             }
         });
-
     }
+
+
 
 
 

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -77,25 +78,46 @@ public class enterpin extends AppCompatActivity {
 
                 if(dataSnapshot != null){
 
-                    oldcpin = dataSnapshot.getValue(String.class);
+                    try{
 
-                    if(oldpin.equals(oldcpin)){
+                        oldcpin = dataSnapshot.getValue(String.class);
 
-                        Toast.makeText(getApplicationContext(), "Success!, Identity Verified", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(enterpin.this, mainmenu.class);
-                        startActivity(intent);
-                        finish();
+                        if(oldcpin!=null){
+
+                            if(oldpin.equals(oldcpin)){
+
+                                Toast.makeText(getApplicationContext(), "Success!, Identity Verified", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(enterpin.this, mainmenu.class);
+                                startActivity(intent);
+                                finish();
+
+                            }
+
+                            else {
+
+                                Toast.makeText(getApplicationContext(), "PIN does not MATCH!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(enterpin.this, enterpin.class);
+                                startActivity(intent);
+                                finish();
+
+                            }
+
+                        }
+
+                        else {
+
+                            Toast.makeText(getApplicationContext(), "No PIN Retrieved or No Internet Connection", Toast.LENGTH_SHORT).show();
+
+                        }
 
                     }
 
-                    else {
+                    catch(Exception e){
 
-                        Toast.makeText(getApplicationContext(), "PIN does not MATCH!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(enterpin.this, enterpin.class);
-                        startActivity(intent);
-                        finish();
+                        Log.e("Confirm Pin", e.getMessage(), e);
 
                     }
+
 
                 }
 
@@ -119,8 +141,28 @@ public class enterpin extends AppCompatActivity {
 
                 if( dataSnapshot != null){
 
-                    olduser = dataSnapshot.getValue(String.class);
-                    System.out.println(olduser);
+                    String oldusers = dataSnapshot.getValue(String.class);
+                    try{
+
+                        if(oldusers!=null){
+
+                            olduser = oldusers;
+                            System.out.println(olduser);
+
+                        }
+                        else{
+
+                            Toast.makeText(getApplicationContext(), "No Current Parent User!", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+                    catch(Exception e){
+
+                        Log.e("Confirm Pin User", e.getMessage(), e);
+
+                    }
+
 
                 }
 

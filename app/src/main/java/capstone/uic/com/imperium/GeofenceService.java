@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
@@ -94,13 +95,35 @@ public class GeofenceService extends Service {
 
                 if(dataSnapshot != null){
 
-                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                    try{
 
-                        childuser = childSnapshot.getKey();
-                        getCurrentLoc(childuser);
-                        getCurrentTaskStatus(childuser);
+                        for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+
+                            if(childSnapshot != null){
+
+                                childuser = childSnapshot.getKey();
+                                getCurrentLoc(childuser);
+                                getCurrentTaskStatus(childuser);
+
+                            }
+
+                            else {
+
+                                Toast.makeText(GeofenceService.this, "No Child Data Retrieved.", Toast.LENGTH_SHORT).show();
+
+
+                            }
+
+                        }
 
                     }
+
+                    catch(Exception e){
+
+                        Log.e("GeoService", e.getMessage(), e);
+
+                    }
+
                 }
                 else {
 
@@ -125,11 +148,30 @@ public class GeofenceService extends Service {
 
                 if(dataSnapshot!=null){
 
-                    String tasks = dataSnapshot.child(user).child("Children").child(childuser).child("HardStatus").getValue(String.class);
+                    try{
 
-                    if(tasks!=null && tasks.equals("1")){
+                        String tasks = dataSnapshot.child(user).child("Children").child(childuser).child("HardStatus").getValue(String.class);
+                        if(tasks!=null){
 
-                        notifs1();
+
+
+                            if(tasks!=null && tasks.equals("1")){
+
+                                notifs1();
+
+                            }
+
+                            else {
+
+                                Toast.makeText(getApplicationContext(), "TasksStatus!", Toast.LENGTH_LONG).show();
+
+                            }
+                        }
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("GeoService", e.getMessage(), e);
 
                     }
 
@@ -161,13 +203,29 @@ public class GeofenceService extends Service {
 
                 if (dataSnapshot != null) {
 
-                    currentloc = dataSnapshot.getValue(String.class);
-                    System.out.println("Current Location: " + currentloc);
-                    String split[] = currentloc.split(",");
-                    lat1 = Double.parseDouble(split[0]);
-                    lng1 = Double.parseDouble(split[1]);
-                    System.out.println("Current Latitude: " + lat1 + " and Current Longitude: " + lng1);
-                    getSavedLoc(childuser);
+                    try{
+
+                        currentloc = dataSnapshot.getValue(String.class);
+                        if(currentloc!=null){
+
+                            System.out.println("Current Location: " + currentloc);
+                            String split[] = currentloc.split(",");
+                            lat1 = Double.parseDouble(split[0]);
+                            lng1 = Double.parseDouble(split[1]);
+                            System.out.println("Current Latitude: " + lat1 + " and Current Longitude: " + lng1);
+                            getSavedLoc(childuser);
+                        }
+                        else{
+
+                            Toast.makeText(getApplicationContext(), "No Current Location retrieved!", Toast.LENGTH_LONG).show();
+
+                        }
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("GeoService", e.getMessage(), e);
+                    }
                 }
 
                 else {
@@ -193,27 +251,47 @@ public class GeofenceService extends Service {
 
                 if (dataSnapshot != null) {
 
-                    savedloc = dataSnapshot.getValue(String.class);
-                    System.out.println("Saved Location: " + savedloc);
-                    String split[] = savedloc.split(",");
-                    lat2 = Double.parseDouble(split[0]);
-                    lng2 = Double.parseDouble(split[1]);
-                    System.out.println("Saved Latitude: " + lat2 + " and Saved Longitude: " + lng2);
-                    double earthRadius = 6371;
-                    double dlat = Math.toRadians(lat2 - lat1);
-                    double dlng = Math.toRadians(lng2 - lng1);
+                    try{
 
-                    double a = Math.sin(dlat/2) * Math.sin(dlat/2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dlng/2) * Math.sin(dlng/2);
-                    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                        if(savedloc!=null){
 
-                    double distance = earthRadius * c * 1000;
+                            savedloc = dataSnapshot.getValue(String.class);
+                            System.out.println("Saved Location: " + savedloc);
+                            String split[] = savedloc.split(",");
+                            lat2 = Double.parseDouble(split[0]);
+                            lng2 = Double.parseDouble(split[1]);
+                            System.out.println("Saved Latitude: " + lat2 + " and Saved Longitude: " + lng2);
+                            double earthRadius = 6371;
+                            double dlat = Math.toRadians(lat2 - lat1);
+                            double dlng = Math.toRadians(lng2 - lng1);
 
-                    if (distance > 100){
+                            double a = Math.sin(dlat/2) * Math.sin(dlat/2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dlng/2) * Math.sin(dlng/2);
+                            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-                        notifs();
+                            double distance = earthRadius * c * 1000;
+
+                            if (distance > 100){
+
+                                notifs();
+                            }
+
+                            System.out.println("The distance is: "+distance);
+
+                        }
+
+                        else {
+
+                            Toast.makeText(getApplicationContext(), "No Saved Location retrieved!", Toast.LENGTH_LONG).show();
+
+                        }
                     }
 
-                    System.out.println("The distance is: "+distance);
+                    catch (Exception e){
+
+                        Log.e("GeoService", e.getMessage(), e);
+
+                    }
+
                 }
 
                 else {
@@ -241,9 +319,28 @@ public class GeofenceService extends Service {
 
                 if(dataSnapshot != null){
 
-                    user = dataSnapshot.getValue(String.class);
-                    System.out.println("Current Parent User: "+user);
-                    startTimer();
+                    try{
+
+                        if(user!=null){
+
+                            user = dataSnapshot.getValue(String.class);
+                            System.out.println("Current Parent User: "+user);
+                            startTimer();
+
+                        }
+
+                        else {
+
+                            Toast.makeText(getApplicationContext(), "No Current User retrieved!", Toast.LENGTH_LONG).show();
+
+                        }
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("GeoService", e.getMessage(), e);
+
+                    }
                 }
                 else {
 

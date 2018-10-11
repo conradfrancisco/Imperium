@@ -15,6 +15,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -126,51 +127,61 @@ public class register extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
+                        try{
 
-                        if (password.equals(cpass)) {
+                            if (password.equals(cpass)) {
 
-                            progressBar.setVisibility(View.VISIBLE);
-                            auth.createUserWithEmailAndPassword(email, password)
-                                    .addOnCompleteListener(register.this, new OnCompleteListener<AuthResult>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<AuthResult> task) {
-                                            progressBar.setVisibility(View.GONE);
+                                progressBar.setVisibility(View.VISIBLE);
+                                auth.createUserWithEmailAndPassword(email, password)
+                                        .addOnCompleteListener(register.this, new OnCompleteListener<AuthResult>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                                progressBar.setVisibility(View.GONE);
 
-                                            if(task.getException() instanceof FirebaseAuthUserCollisionException) {
+                                                if(task.getException() instanceof FirebaseAuthUserCollisionException) {
 
-                                                Toast.makeText(register.this, "Account is already registered!", Toast.LENGTH_SHORT).show();
-                                                inputcpass.setText(null);
-                                                inputemail.setText(null);
-                                                inputpassword.setText(null);
-                                                inputuser.setText(null);
-                                                inputname.setText(null);
+                                                    Toast.makeText(register.this, "Account is already registered!", Toast.LENGTH_SHORT).show();
+                                                    inputcpass.setText(null);
+                                                    inputemail.setText(null);
+                                                    inputpassword.setText(null);
+                                                    inputuser.setText(null);
+                                                    inputname.setText(null);
 
+                                                }
+                                                else if(task.isSuccessful()) {
+
+
+                                                    createNewUser(task.getResult().getUser(), user, full);
+                                                    auth.signOut();
+                                                    Toast.makeText(register.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                                                    startActivity(new Intent(register.this, login.class));
+                                                    finish();
+
+
+                                                }
                                             }
-                                            else if(task.isSuccessful()) {
+                                        });
+                            }
+                            else
+                            {
+
+                                Toast.makeText(getApplicationContext(), "Passwords do not Match!", Toast.LENGTH_SHORT).show();
+                                inputemail.setText(null);
+                                inputuser.setText(null);
+                                inputname.setText(null);
+                                inputcpass.setText(null);
+                                inputpassword.setText(null);
 
 
-                                                createNewUser(task.getResult().getUser(), user, full);
-                                                auth.signOut();
-                                                Toast.makeText(register.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
-                                                startActivity(new Intent(register.this, login.class));
-                                                finish();
-
-
-                                            }
-                                        }
-                            });
+                            }
                         }
-                        else{
 
-                            Toast.makeText(getApplicationContext(), "Passwords do not Match!", Toast.LENGTH_SHORT).show();
-                            inputemail.setText(null);
-                            inputuser.setText(null);
-                            inputname.setText(null);
-                            inputcpass.setText(null);
-                            inputpassword.setText(null);
+                        catch(Exception e){
 
+                            Log.e("Registration", e.getMessage(), e);
 
                         }
+
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {

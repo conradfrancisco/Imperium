@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,10 +33,8 @@ public class ChildTasksFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
     private String mParam1;
     private String mParam2;
-
     private Button submit, verify;
     private TextView statusb;
     private AutoCompleteTextView assigntask;
@@ -111,11 +110,25 @@ public class ChildTasksFragment extends Fragment {
 
                     for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
 
-                        String FName = nameSnapshot.getKey();
-                        names.add(FName);
-                        System.out.println(FName);
+                        try{
 
-                    }
+                            if(nameSnapshot!=null){
+
+                                String FName = nameSnapshot.getKey();
+                                names.add(FName);
+                                System.out.println(FName);
+                            }
+                        }
+
+                        catch(Exception e){
+
+                            Log.e("New Pin Registration", e.getMessage(), e);
+
+                        }
+
+
+
+                 }
 
                     ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
                     namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -135,8 +148,29 @@ public class ChildTasksFragment extends Fragment {
                                     if(dataSnapshot != null) {
 
                                         passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
-                                        System.out.println("I am" + " " + passemails);
-                                        getStatus(passemails);
+                                        try{
+
+                                            if(passemails!=null){
+
+                                                System.out.println("I am" + " " + passemails);
+                                                getStatus(passemails);
+
+                                            }
+
+                                            else{
+
+                                                Toast.makeText(getActivity(), "Children not Found!", Toast.LENGTH_SHORT).show();
+
+                                            }
+
+                                        }
+
+                                        catch(Exception e){
+
+                                            Log.e("Child Tasks", e.getMessage(), e);
+
+                                        }
+
 
                                     }
 
@@ -222,19 +256,33 @@ public class ChildTasksFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 status = dataSnapshot.child("Children").child(passemails).child("HardStatus").getValue(String.class);
-                if(status!=null && status.equals("1")){
+                try{
 
-                    statusb.setVisibility(View.VISIBLE);
-                    verify.setVisibility(View.VISIBLE);
-                    System.out.println("Current Value: "+status);
+                    if(status!=null && status.equals("1")){
+
+                        statusb.setVisibility(View.VISIBLE);
+                        verify.setVisibility(View.VISIBLE);
+                        System.out.println("Current Value: "+status);
+
+                    }
+                    else if(status.equals("0")){
+
+                        statusb.setVisibility(View.GONE);
+                        verify.setVisibility(View.GONE);
+                        System.out.println("Current Value: "+status);
+
+                    }
+                    else{
+
+                        Toast.makeText(getActivity(), "Tasks not found!", Toast.LENGTH_LONG).show();
+
+                    }
 
                 }
-                else if(status.equals("0")){
 
-                    statusb.setVisibility(View.GONE);
-                    verify.setVisibility(View.GONE);
-                    System.out.println("Current Value: "+status);
+                catch(Exception e){
 
+                    Log.e("Child Tasks", e.getMessage(), e);
                 }
 
             }

@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -159,80 +160,110 @@ public class login extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot1) {
 
-                if(dataSnapshot1 != null) {
+                try{
 
-                    String email = dataSnapshot1.getValue(String.class);
-                    ems = email;
-                    DatabaseReference second = FirebaseDatabase.getInstance().getReference().child("Users").child(users);
-                    second.child("pin").addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot2) {
+                    if(dataSnapshot1 != null) {
 
-                            if(dataSnapshot2 != null){
+                        String email = dataSnapshot1.getValue(String.class);
+                        if(email!=null){
 
-                                String pin = dataSnapshot2.getValue(String.class);
-                                pinned = pin;
+                            ems = email;
+                            DatabaseReference second = FirebaseDatabase.getInstance().getReference().child("Users").child(users);
+                            second.child("pin").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot2) {
 
-                                System.out.println(fpass);
-                                System.out.println(ems);
-                                System.out.println(pinned);
-                                bar.setVisibility(View.VISIBLE);
-                                auth.signInWithEmailAndPassword(ems, fpass)
-                                        .addOnCompleteListener(login.this, new OnCompleteListener<AuthResult>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                                bar.setVisibility(View.GONE);
-                                                if(task.isSuccessful()){
+                                    if(dataSnapshot2 != null){
 
-                                                    if(pinned.equals("New")){
-                                                        System.out.println(pinned);
-                                                        Intent intent = new Intent(login.this, newpin.class);
-                                                        startActivity(intent);
-                                                        finish();
-                                                    }
-                                                    else if(pinned.equals("Old")){
-                                                        System.out.println(pinned);
-                                                        Intent intent = new Intent(login.this, enterpin.class);
-                                                        startActivity(intent);
-                                                        finish();
-                                                    }
-                                                }
-                                                else {
+                                        String pin = dataSnapshot2.getValue(String.class);
+                                        if(pin!=null){
 
-                                                    Toast.makeText(login.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
-                                                    inputuser.setText("");
-                                                    inputpassword.setText("");
-                                                }
+                                            pinned = pin;
 
-                                            }
-                                        });
+                                            System.out.println(fpass);
+                                            System.out.println(ems);
+                                            System.out.println(pinned);
+                                            bar.setVisibility(View.VISIBLE);
+                                            auth.signInWithEmailAndPassword(ems, fpass)
+                                                    .addOnCompleteListener(login.this, new OnCompleteListener<AuthResult>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                                            bar.setVisibility(View.GONE);
+                                                            if(task.isSuccessful()){
 
-                            }
-                            else {
+                                                                if(pinned.equals("New")){
+                                                                    System.out.println(pinned);
+                                                                    Intent intent = new Intent(login.this, newpin.class);
+                                                                    startActivity(intent);
+                                                                    finish();
+                                                                }
+                                                                else if(pinned.equals("Old")){
+                                                                    System.out.println(pinned);
+                                                                    Intent intent = new Intent(login.this, enterpin.class);
+                                                                    startActivity(intent);
+                                                                    finish();
+                                                                }
+                                                            }
+                                                            else {
 
-                                Toast.makeText(getApplicationContext(), "NO PIN", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(login.this, register.class);
-                                startActivity(intent);
-                                finish();
+                                                                Toast.makeText(login.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
+                                                                inputuser.setText("");
+                                                                inputpassword.setText("");
+                                                            }
 
-                            }
+                                                        }
+                                                    });
+
+                                        }
+                                        else{
+
+                                            Toast.makeText(login.this, "Register First.", Toast.LENGTH_LONG).show();
+
+                                        }
+
+
+                                    }
+                                    else {
+
+                                        Toast.makeText(getApplicationContext(), "NO PIN", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(login.this, register.class);
+                                        startActivity(intent);
+                                        finish();
+
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+
+
+                            });
+
                         }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                        else{
+
+                            Toast.makeText(login.this, "No Email Address Found for this certain Username, Register First.", Toast.LENGTH_LONG).show();
 
                         }
 
+                    }
+                    else {
 
-                    });
+                        Toast.makeText(getApplicationContext(), "Account Not Registered!", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(login.this, register.class);
+                        startActivity(intent);
+                        finish();
+
+                    }
                 }
-                else {
 
-                    Toast.makeText(getApplicationContext(), "Account Not Registered!", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(login.this, register.class);
-                    startActivity(intent);
-                    finish();
+                catch(Exception e){
+
+                    Log.e("getEmail", e.getMessage(), e);
 
                 }
+
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {

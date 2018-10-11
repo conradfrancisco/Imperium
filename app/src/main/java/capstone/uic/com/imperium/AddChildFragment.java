@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Toast;
+
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -208,9 +210,29 @@ public class AddChildFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                if( dataSnapshot != null){
+                if(dataSnapshot != null){
 
-                    user = dataSnapshot.getValue(String.class);
+                    String userz = dataSnapshot.getValue(String.class);
+                    try{
+
+                        if(userz!=null){
+
+                            user = userz;
+
+                        }
+                        else{
+
+                            Toast.makeText(getActivity(), "No Current Users!", Toast.LENGTH_SHORT).show();
+
+                        }
+
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("New Pin Registration", e.getMessage(), e);
+
+                    }
 
                 }
 
