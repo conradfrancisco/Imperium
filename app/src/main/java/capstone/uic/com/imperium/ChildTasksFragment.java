@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -27,34 +28,37 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChildDeviceFragment extends Fragment {
+public class ChildTasksFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
     private String mParam1;
     private String mParam2;
+
+    private Button submit, verify;
+    private TextView statusb;
+    private AutoCompleteTextView assigntask;
+    private Spinner spinname;
     String passemails = "";
-    private Button enable, disable;
-    private TextView childname, status;
     final List<String> names = new ArrayList<String>();
     private FirebaseAuth auth;
-    private DatabaseReference ref, ref1, ref2, ref3;
-    private Spinner spinname;
+    private DatabaseReference ref, ref1, ref2, ref3, ref4, ref5;
     String user = "";
     String email = "";
     String parent = "";
     String values = "";
     String array[];
+    String status = "";
 
     private OnFragmentInteractionListener mListener;
 
-    public ChildDeviceFragment() {
+    public ChildTasksFragment() {
 
     }
 
-    public static ChildDeviceFragment newInstance(String param1, String param2) {
-        ChildDeviceFragment fragment = new ChildDeviceFragment();
+    public static ChildTasksFragment newInstance(String param1, String param2) {
+        ChildTasksFragment fragment = new ChildTasksFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -72,24 +76,21 @@ public class ChildDeviceFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public void onViewCreated (View view, Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.fragment_child_device, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState){
-
-        spinname = (Spinner) view.findViewById(R.id.namespin1);
-        enable = (Button) view.findViewById(R.id.enable);
-        disable = (Button) view.findViewById(R.id.disable);
-        status = (TextView) view.findViewById(R.id.status);
-        childname = (TextView) view.findViewById(R.id.childname);
+        spinname = (Spinner) view.findViewById(R.id.namespin2);
+        assigntask = (AutoCompleteTextView) view.findViewById(R.id.assigntask);
+        String[] tasks = getResources().getStringArray(R.array.tasks_array);
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, tasks);
+        assigntask.setAdapter(adapter);
+        statusb = (TextView) view.findViewById(R.id.statusb);
+        submit = (Button) view.findViewById(R.id.submitb);
+        verify = (Button) view.findViewById(R.id.verify);
 
         auth = FirebaseAuth.getInstance();
         FirebaseUser users = auth.getCurrentUser();
-        if(users!=null){
+        if (users != null) {
 
             email = users.getEmail();
             mainmenu act = (mainmenu) getActivity();
@@ -97,9 +98,9 @@ public class ChildDeviceFragment extends Fragment {
 
 
         }
+
         System.out.println(email);
         System.out.println(user);
-
         ref1 = FirebaseDatabase.getInstance().getReference("Users");
         ref1.child(user).child("AllChildren").addValueEventListener(new ValueEventListener() {
             @Override
@@ -131,55 +132,11 @@ public class ChildDeviceFragment extends Fragment {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                    if(dataSnapshot != null){
+                                    if(dataSnapshot != null) {
 
                                         passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
                                         System.out.println("I am" + " " + passemails);
-                                        ref2 = FirebaseDatabase.getInstance().getReference("Users");
-                                        ref2.addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                                if(dataSnapshot != null){
-
-                                                    String val = dataSnapshot.child(user).child("Children").child(passemails).child("BlockDevice").getValue(String.class);
-                                                    if(val.equals("1")){
-
-                                                        childname.setVisibility(View.VISIBLE);
-                                                        status.setVisibility(View.VISIBLE);
-                                                        childname.setText("Your child, " +values+ "'s device is currently:");
-                                                        status.setText("BLOCKED");
-                                                        disable.setVisibility(View.VISIBLE);
-                                                        enable.setVisibility(View.GONE);
-
-                                                    }
-                                                    else if (val.equals("0")){
-
-
-                                                        childname.setVisibility(View.VISIBLE);
-                                                        status.setVisibility(View.VISIBLE);
-                                                        childname.setText("Your child, " +values+ "'s device is currently:");
-                                                        status.setText("UNBLOCKED");
-                                                        enable.setVisibility(View.VISIBLE);
-                                                        disable.setVisibility(View.GONE);
-
-                                                    }
-
-                                                }
-
-                                                else {
-
-                                                    Toast.makeText(getActivity(), "No data retrieved!", Toast.LENGTH_LONG).show();
-
-                                                }
-
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
+                                        getStatus(passemails);
 
                                     }
 
@@ -225,66 +182,116 @@ public class ChildDeviceFragment extends Fragment {
 
         });
 
-        disable.setOnClickListener(new View.OnClickListener() {
+        submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                ref2 = FirebaseDatabase.getInstance().getReference("Users");
                 ref3 = FirebaseDatabase.getInstance().getReference("Users");
-                ref3.child(user).child("Children").child(passemails).child("BlockDevice").setValue("0");
+                ref4 = FirebaseDatabase.getInstance().getReference("Users");
+                ref2.child(user).child("Children").child(passemails).child("Tasks").child("Status").setValue("1");
+                ref3.child(user).child("Children").child(passemails).child("Tasks").child("To-Do").setValue(assigntask.getText().toString());
+                ref4.child(user).child("Children").child(passemails).child("HardStatus").setValue("0");
+                assigntask.setText(null);
+                submit.setVisibility(View.GONE);
+                verify.setVisibility(View.VISIBLE);
 
             }
         });
 
-        enable.setOnClickListener(new View.OnClickListener() {
+        verify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                ref3 = FirebaseDatabase.getInstance().getReference("Users");
-                ref3.child(user).child("Children").child(passemails).child("BlockDevice").setValue("1");
+                submit.setVisibility(View.VISIBLE);
+                verify.setVisibility(View.GONE);
+                ref4.child(user).child("Children").child(passemails).child("HardStatus").setValue("0");
+
+            }
+        });
+
+
+    }
+
+    public void getStatus(final String passemails){
+
+        ref5 = FirebaseDatabase.getInstance().getReference("Users");
+        ref5.child(user).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                status = dataSnapshot.child("Children").child(passemails).child("HardStatus").getValue(String.class);
+                if(status!=null && status.equals("1")){
+
+                    statusb.setVisibility(View.VISIBLE);
+                    verify.setVisibility(View.VISIBLE);
+                    System.out.println("Current Value: "+status);
+
+                }
+                else if(status.equals("0")){
+
+                    statusb.setVisibility(View.GONE);
+                    verify.setVisibility(View.GONE);
+                    System.out.println("Current Value: "+status);
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
         });
 
     }
 
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+        @Override
+        public View onCreateView (LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState){
+
+            return inflater.inflate(R.layout.fragment_child_tasks, container, false);
         }
-    }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+        public void onButtonPressed (Uri uri){
+            if (mListener != null) {
+                mListener.onFragmentInteraction(uri);
+            }
         }
-    }
 
+        @Override
+        public void onAttach (Context context){
+            super.onAttach(context);
+            if (context instanceof OnFragmentInteractionListener) {
+                mListener = (OnFragmentInteractionListener) context;
+            } else {
+                throw new RuntimeException(context.toString()
+                        + " must implement OnFragmentInteractionListener");
+            }
+        }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-    }
-    @Override
-    public void onStop() {
-        super.onStop();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
+        @Override
+        public void onResume () {
+            super.onResume();
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        }
+        @Override
+        public void onStop () {
+            super.onStop();
+            ((AppCompatActivity) getActivity()).getSupportActionBar().show();
 
-    }
+        }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
+        @Override
+        public void onDetach () {
+            super.onDetach();
+            mListener = null;
+        }
 
-    public interface OnFragmentInteractionListener {
+        public interface OnFragmentInteractionListener {
 
-        void onFragmentInteraction(Uri uri);
-    }
+            void onFragmentInteraction(Uri uri);
+        }
 }
+

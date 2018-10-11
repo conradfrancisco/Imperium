@@ -11,8 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,12 +31,16 @@ public class ChildActivitiesFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private ListView listViewApps;
     final List<String> names = new ArrayList<String>();
+    final List<String> apps = new ArrayList<String>();
+    private ArrayAdapter<String> arrayAdapterCrimes;
     private String mParam1;
     private FirebaseAuth auth;
-    private DatabaseReference ref1;
+    private DatabaseReference ref1, ref2;
     private String mParam2;
     private Spinner spinname;
+    String passemails = "";
     String user = "";
     String email = "";
     String parent = "";
@@ -76,7 +83,7 @@ public class ChildActivitiesFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState){
 
         spinname = (Spinner) view.findViewById(R.id.namespin);
-
+        listViewApps = (ListView) view.findViewById(R.id.listview);
         auth = FirebaseAuth.getInstance();
         FirebaseUser users = auth.getCurrentUser();
         if(users!=null){
@@ -105,7 +112,7 @@ public class ChildActivitiesFragment extends Fragment {
 
                     }
 
-                    ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
+                    final ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
                     namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinname.setAdapter(namesAdapter);
                     spinname.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -115,6 +122,66 @@ public class ChildActivitiesFragment extends Fragment {
                             TextView tv = (TextView)view;
                             values = tv.getText().toString();
                             System.out.println(values);
+                            ref1 = FirebaseDatabase.getInstance().getReference("Users");
+                            ref1.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                    if(dataSnapshot != null) {
+
+                                        passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                                        if(passemails!=null){
+
+                                            System.out.println("I am" + " " + passemails);
+                                            ref2 = FirebaseDatabase.getInstance().getReference("Users");
+                                            ref2.child("Children").child(passemails).child("Apps").addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                                    if(dataSnapshot != null){
+
+
+                                                        for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
+
+                                                            if(nameSnapshot!=null){
+
+                                                                String AName = nameSnapshot.getKey();
+                                                                apps.add(AName);
+                                                                System.out.println(AName);
+
+                                                            }
+                                                            arrayAdapterCrimes = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, apps);
+                                                            listViewApps.setAdapter(arrayAdapterCrimes);
+                                                        }
+                                                    }
+
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+
+
+                                    }
+
+                                    else {
+
+                                        Toast.makeText(getActivity(), "No child exists!", Toast.LENGTH_LONG).show();
+
+                                    }
+
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
 
                         }
 
@@ -127,6 +194,12 @@ public class ChildActivitiesFragment extends Fragment {
 
                 }
 
+                else {
+
+                    Toast.makeText(getActivity(), "No child has been added yet!", Toast.LENGTH_LONG).show();
+
+                }
+
             }
 
             @Override
@@ -136,8 +209,14 @@ public class ChildActivitiesFragment extends Fragment {
 
 
         });
+        listViewApps.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-
+                String appn = (String) listViewApps.getItemAtPosition(i);
+                Toast.makeText(getActivity(), appn, Toast.LENGTH_LONG).show();
+            }
+        });
 
     }
 

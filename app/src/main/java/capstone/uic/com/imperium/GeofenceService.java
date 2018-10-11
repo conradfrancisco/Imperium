@@ -98,8 +98,13 @@ public class GeofenceService extends Service {
 
                         childuser = childSnapshot.getKey();
                         getCurrentLoc(childuser);
+                        getCurrentTaskStatus(childuser);
 
                     }
+                }
+                else {
+
+                    Toast.makeText(getApplicationContext(), "Please add a child to monitor first!", Toast.LENGTH_LONG).show();
 
                 }
 
@@ -109,6 +114,41 @@ public class GeofenceService extends Service {
 
             }
         });
+    }
+
+    public void getCurrentTaskStatus(final String childuser){
+
+        DatabaseReference status = FirebaseDatabase.getInstance().getReference().child("Users");
+        status.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot!=null){
+
+                    String tasks = dataSnapshot.child(user).child("Children").child(childuser).child("HardStatus").getValue(String.class);
+
+                    if(tasks!=null && tasks.equals("1")){
+
+                        notifs1();
+
+                    }
+
+                }
+
+                else {
+
+                    Toast.makeText(GeofenceService.this, "No tasks yet!", Toast.LENGTH_LONG).show();
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 
@@ -128,6 +168,12 @@ public class GeofenceService extends Service {
                     lng1 = Double.parseDouble(split[1]);
                     System.out.println("Current Latitude: " + lat1 + " and Current Longitude: " + lng1);
                     getSavedLoc(childuser);
+                }
+
+                else {
+
+                    Toast.makeText(getApplicationContext(), "No Current Location retrieved!", Toast.LENGTH_LONG).show();
+
                 }
             }
 
@@ -169,6 +215,12 @@ public class GeofenceService extends Service {
 
                     System.out.println("The distance is: "+distance);
                 }
+
+                else {
+
+                    Toast.makeText(getApplicationContext(), "No Saved Location retrieved!", Toast.LENGTH_LONG).show();
+                }
+
             }
 
             @Override
@@ -226,6 +278,32 @@ public class GeofenceService extends Service {
         build = new Notification.Builder (con)
                 .setContentTitle("Imperium Monitoring")
                 .setContentText("Your Child might be entering or leaving his/her location")
+                .setContentIntent(pit)
+                .setSmallIcon(R.drawable.icon)
+                .setOngoing(false);
+
+
+        Notification notifs = build.build();
+
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notifs);
+    }
+
+    public void notifs1(){
+
+        IntentFilter ifl = new IntentFilter();
+        ifl.addAction("ok");
+
+        Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(""));
+        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pit = PendingIntent.getActivity(getApplicationContext(), 0, it, 0);
+        Context con = getApplicationContext();
+
+        Notification.Builder build;
+
+        build = new Notification.Builder (con)
+                .setContentTitle("Imperium Monitoring")
+                .setContentText("Your Child Reported that he/she has finished the assigned task.")
                 .setContentIntent(pit)
                 .setSmallIcon(R.drawable.icon)
                 .setOngoing(false);

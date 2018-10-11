@@ -137,6 +137,8 @@ public class AddChildFragment extends Fragment {
                         ref2.child(user).child("Children").child(split[0]).child("ChildPass").setValue(pass);
                         ref1.child(user).child("AllChildren").child(namesd).setValue(split[0]);
                         ref3.child("Children").child(user).child(split[0]).setValue(true);
+                        ref4.child(user).child("Children").child(split[0]).child("BlockDevice").setValue("0");
+                        ref5.child(user).child("Children").child(split[0]).child("Apps").child("Facebook").setValue(true);
                         progress.setVisibility(View.GONE);
                         startActivity(new Intent(getActivity(), mainmenu.class));
 

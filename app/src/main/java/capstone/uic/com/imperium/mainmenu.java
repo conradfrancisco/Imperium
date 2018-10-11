@@ -33,6 +33,7 @@ public class mainmenu extends AppCompatActivity
                     AddChildFragment.OnFragmentInteractionListener,
                     GeofencingFragments.OnFragmentInteractionListener,
                     ChildDeviceFragment.OnFragmentInteractionListener,
+                    ChildTasksFragment.OnFragmentInteractionListener,
                     ChildActivitiesFragment.OnFragmentInteractionListener
     {
 
@@ -173,6 +174,9 @@ public class mainmenu extends AppCompatActivity
 
         else if (id == R.id.tasks) {
 
+            ChildTasksFragment p = new ChildTasksFragment();
+            FragmentManager f = getSupportFragmentManager();
+            f.beginTransaction().replace(R.id.mainLayout, p).addToBackStack(null).commit();
 
         }
 
