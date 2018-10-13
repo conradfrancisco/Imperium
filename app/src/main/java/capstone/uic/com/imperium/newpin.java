@@ -59,7 +59,8 @@ public class newpin extends AppCompatActivity {
 
         submit2.setVisibility(View.GONE);
         pinView1.setVisibility(View.GONE);
-
+        Intent intent = new Intent(newpin.this, GeofenceService.class);
+        stopService(intent);
         submit.setOnClickListener(new View.OnClickListener() {
 
             @Override

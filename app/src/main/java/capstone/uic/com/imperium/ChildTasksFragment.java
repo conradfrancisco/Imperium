@@ -36,6 +36,7 @@ public class ChildTasksFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private Button submit, verify;
+    private TextView statusb1;
     private TextView statusb;
     private AutoCompleteTextView assigntask;
     private Spinner spinname;
@@ -84,6 +85,7 @@ public class ChildTasksFragment extends Fragment {
                 new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, tasks);
         assigntask.setAdapter(adapter);
         statusb = (TextView) view.findViewById(R.id.statusb);
+        statusb1 = (TextView) view.findViewById(R.id.statusb1);
         submit = (Button) view.findViewById(R.id.submitb);
         verify = (Button) view.findViewById(R.id.verify);
 
@@ -229,6 +231,12 @@ public class ChildTasksFragment extends Fragment {
                 assigntask.setText(null);
                 submit.setVisibility(View.GONE);
                 verify.setVisibility(View.VISIBLE);
+                if(status.equals("0")){
+
+                    statusb1.setVisibility(View.VISIBLE);
+
+                }
+
 
             }
         });
@@ -239,7 +247,10 @@ public class ChildTasksFragment extends Fragment {
 
                 submit.setVisibility(View.VISIBLE);
                 verify.setVisibility(View.GONE);
+                ref4 = FirebaseDatabase.getInstance().getReference("Users");
                 ref4.child(user).child("Children").child(passemails).child("HardStatus").setValue("0");
+                ref5 = FirebaseDatabase.getInstance().getReference("Users");
+                ref5.child(user).child("Children").child(passemails).child("Tasks").child("Status").setValue("0");
 
             }
         });

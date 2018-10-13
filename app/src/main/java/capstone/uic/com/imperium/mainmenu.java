@@ -440,9 +440,9 @@ public class mainmenu extends AppCompatActivity
     public void signOut() {
 
         auth.signOut();
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-        getuser.removeValue();
         startActivity(new Intent(mainmenu.this, login.class));
+        Intent i = new Intent(this, GeofenceService.class);
+        this.stopService(i);
         finish();
     }
 

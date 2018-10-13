@@ -49,6 +49,8 @@ public class reset extends AppCompatActivity{
         progressBar = (ProgressBar) findViewById(R.id.progressb);
         constraint = (ConstraintLayout) findViewById(R.id.constraintreset);
         auth = FirebaseAuth.getInstance();
+        Intent intent = new Intent(reset.this, GeofenceService.class);
+        stopService(intent);
 
         btnReset.setOnClickListener(new View.OnClickListener() {
             @Override

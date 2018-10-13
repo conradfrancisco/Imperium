@@ -22,6 +22,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -42,8 +45,8 @@ public class register extends AppCompatActivity {
     private EditText inputuser, inputemail, inputpassword, inputcpass, inputname;
     private Button register, login1;
     private ProgressBar progressBar;
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference databaseReference;
+    FirebaseDatabase firebaseDatabase, re;
+    DatabaseReference databaseReference, ref;
     private boolean monitoringConnectivity = false;
     boolean isConnected = true;
 
@@ -53,7 +56,8 @@ public class register extends AppCompatActivity {
         setContentView(R.layout.activity_signup);
 
         auth = FirebaseAuth.getInstance();
-
+        Intent intent = new Intent(register.this, GeofenceService.class);
+        stopService(intent);
         inputuser = (EditText) findViewById(R.id.username);
         inputemail = (EditText) findViewById(R.id.emailadd);
         inputpassword = (EditText) findViewById(R.id.pass);
@@ -67,11 +71,14 @@ public class register extends AppCompatActivity {
         FirebaseApp.initializeApp(register.this);
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference();
+        re = FirebaseDatabase.getInstance();
+        ref = re.getReference();
 
         login1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+
+                startActivity(new Intent(register.this, login.class));
             }
         });
 
@@ -79,127 +86,168 @@ public class register extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                final String email = inputemail.getText().toString().trim();
-                final String user = inputuser.getText().toString().trim();
-                final String password = inputpassword.getText().toString().trim();
-                final String cpass = inputcpass.getText().toString().trim();
-                final String full = inputname.getText().toString().trim();
+                try{
 
-                if (TextUtils.isEmpty(email) && TextUtils.isEmpty(user) && TextUtils.isEmpty(password) && TextUtils.isEmpty(cpass)) {
-                    Toast.makeText(getApplicationContext(), "Please Enter some Valid Information!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                    final String email = inputemail.getText().toString().trim();
+                    final String user = inputuser.getText().toString().trim();
+                    final String password = inputpassword.getText().toString().trim();
+                    final String cpass = inputcpass.getText().toString().trim();
+                    final String full = inputname.getText().toString().trim();
 
-                else if (TextUtils.isEmpty(email)) {
-                    Toast.makeText(getApplicationContext(), "Please Enter a Valid Email address!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                else if (TextUtils.isEmpty(user)) {
-                    Toast.makeText(getApplicationContext(), "Please Enter your Username!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                else if (TextUtils.isEmpty(password)) {
-                    Toast.makeText(getApplicationContext(), "Please Enter your Password!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                else if (TextUtils.isEmpty(cpass)) {
-                    Toast.makeText(getApplicationContext(), "Please confirm your Password!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                else if (password.length() < 6) {
-                    Toast.makeText(getApplicationContext(), "Password is too short, Enter minimum 6 characters!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-                    Toast.makeText(getApplicationContext(), "Enter a Valid Email Address!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(register.this);
-                builder.setTitle("Please confirm action!");
-                builder.setMessage("Are all the information provided True and Correct?");
-                builder.setIcon(R.drawable.icon);
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        try{
-
-                            if (password.equals(cpass)) {
-
-                                progressBar.setVisibility(View.VISIBLE);
-                                auth.createUserWithEmailAndPassword(email, password)
-                                        .addOnCompleteListener(register.this, new OnCompleteListener<AuthResult>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                                progressBar.setVisibility(View.GONE);
-
-                                                if(task.getException() instanceof FirebaseAuthUserCollisionException) {
-
-                                                    Toast.makeText(register.this, "Account is already registered!", Toast.LENGTH_SHORT).show();
-                                                    inputcpass.setText(null);
-                                                    inputemail.setText(null);
-                                                    inputpassword.setText(null);
-                                                    inputuser.setText(null);
-                                                    inputname.setText(null);
-
-                                                }
-                                                else if(task.isSuccessful()) {
-
-
-                                                    createNewUser(task.getResult().getUser(), user, full);
-                                                    auth.signOut();
-                                                    Toast.makeText(register.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
-                                                    startActivity(new Intent(register.this, login.class));
-                                                    finish();
-
-
-                                                }
-                                            }
-                                        });
-                            }
-                            else
-                            {
-
-                                Toast.makeText(getApplicationContext(), "Passwords do not Match!", Toast.LENGTH_SHORT).show();
-                                inputemail.setText(null);
-                                inputuser.setText(null);
-                                inputname.setText(null);
-                                inputcpass.setText(null);
-                                inputpassword.setText(null);
-
-
-                            }
-                        }
-
-                        catch(Exception e){
-
-                            Log.e("Registration", e.getMessage(), e);
-
-                        }
-
+                    if (TextUtils.isEmpty(email) && TextUtils.isEmpty(user) && TextUtils.isEmpty(password) && TextUtils.isEmpty(cpass)) {
+                        Toast.makeText(getApplicationContext(), "Please Enter some Valid Information!", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
 
-                        dialogInterface.dismiss();
-                        Toast.makeText(getApplicationContext(), "Registration Cancelled!", Toast.LENGTH_SHORT).show();
-                        inputcpass.setText(null);
-                        inputname.setText(null);
-                        inputemail.setText(null);
-                        inputpassword.setText(null);
-                        inputuser.setText(null);
-
+                    else if (TextUtils.isEmpty(email)) {
+                        Toast.makeText(getApplicationContext(), "Please Enter a Valid Email address!", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                });
-                android.support.v7.app.AlertDialog alert = builder.create();
-                alert.show();
+
+                    else if (TextUtils.isEmpty(user)) {
+                        Toast.makeText(getApplicationContext(), "Please Enter your Username!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    else if (TextUtils.isEmpty(password)) {
+                        Toast.makeText(getApplicationContext(), "Please Enter your Password!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    else if (TextUtils.isEmpty(cpass)) {
+                        Toast.makeText(getApplicationContext(), "Please confirm your Password!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    else if (password.length() < 6) {
+                        Toast.makeText(getApplicationContext(), "Password is too short, Enter minimum 6 characters!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                        Toast.makeText(getApplicationContext(), "Enter a Valid Email Address!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(register.this);
+                    builder.setTitle("Please confirm action!");
+                    builder.setMessage("Are all the information provided True and Correct?");
+                    builder.setIcon(R.drawable.icon);
+                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                            try{
+
+                                if (password.equals(cpass)) {
+
+                                    progressBar.setVisibility(View.VISIBLE);
+                                    auth.createUserWithEmailAndPassword(email, password)
+                                            .addOnCompleteListener(register.this, new OnCompleteListener<AuthResult>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                                    progressBar.setVisibility(View.GONE);
+
+                                                    if(!task.isSuccessful()){
+
+                                                        Log.w("Registration", "signInWithCredential", task.getException());
+                                                        Toast.makeText(getApplicationContext(), "Firebase Sign Up Failed",
+                                                                Toast.LENGTH_SHORT).show();
+
+                                                        if(task.getException() instanceof FirebaseAuthUserCollisionException) {
+
+                                                            Toast.makeText(register.this, "Account is already registered!", Toast.LENGTH_LONG).show();
+                                                            inputcpass.setText(null);
+                                                            inputemail.setText(null);
+                                                            inputpassword.setText(null);
+                                                            inputuser.setText(null);
+                                                            inputname.setText(null);
+
+                                                        }
+
+                                                        else if(task.getException() instanceof FirebaseAuthWeakPasswordException) {
+
+                                                            Toast.makeText(register.this, "Please Enter a more stronger password combination!", Toast.LENGTH_LONG).show();
+                                                            inputcpass.setText(null);
+                                                            inputemail.setText(null);
+                                                            inputpassword.setText(null);
+                                                            inputuser.setText(null);
+                                                            inputname.setText(null);
+
+                                                        }
+
+                                                        else if(task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
+
+                                                            Toast.makeText(register.this, "Please check your EMail Address!", Toast.LENGTH_LONG).show();
+                                                            inputcpass.setText(null);
+                                                            inputemail.setText(null);
+                                                            inputpassword.setText(null);
+                                                            inputuser.setText(null);
+                                                            inputname.setText(null);
+
+                                                        }
+
+                                                    }
+
+                                                    else if(task.isSuccessful()) {
+
+
+                                                        createNewUser(task.getResult().getUser(), user, full);
+                                                        auth.signOut();
+                                                        Toast.makeText(register.this, "Registration has been Successful!", Toast.LENGTH_LONG).show();
+                                                        startActivity(new Intent(register.this, login.class));
+                                                        finish();
+
+                                                    }
+                                                }
+                                            });
+                                }
+
+                                else
+                                {
+
+                                    Toast.makeText(getApplicationContext(), "Passwords do not Match!", Toast.LENGTH_SHORT).show();
+                                    inputemail.setText(null);
+                                    inputuser.setText(null);
+                                    inputname.setText(null);
+                                    inputcpass.setText(null);
+                                    inputpassword.setText(null);
+
+
+                                }
+                            }
+
+                            catch(Exception e){
+
+                                Log.e("Registration", e.getMessage(), e);
+
+                            }
+
+                        }
+                    });
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                            dialogInterface.dismiss();
+                            Toast.makeText(getApplicationContext(), "Registration Cancelled!", Toast.LENGTH_SHORT).show();
+                            inputcpass.setText(null);
+                            inputname.setText(null);
+                            inputemail.setText(null);
+                            inputpassword.setText(null);
+                            inputuser.setText(null);
+
+                        }
+                    });
+                    android.support.v7.app.AlertDialog alert = builder.create();
+                    alert.show();
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("Registration", e.getMessage(), e);
+
+                }
             }
         });
 
@@ -216,6 +264,8 @@ public class register extends AppCompatActivity {
         u.setPin("New");
 
         databaseReference.child("Users").child(username).setValue(u);
+        String app[] = email.split("@");
+        ref.child("Current").child(app[0]).setValue(username);
 
     }
     public void onBackPressed(){

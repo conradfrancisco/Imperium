@@ -66,7 +66,8 @@ public class login extends AppCompatActivity {
             startActivity(new Intent(login.this, mainmenu.class));
             finish();
         }
-
+        Intent intent = new Intent(login.this, GeofenceService.class);
+        stopService(intent);
         inputuser = (EditText) findViewById(R.id.user);
         inputpassword = (EditText) findViewById(R.id.pass);
         signup = (Button) findViewById(R.id.regis);
@@ -100,7 +101,6 @@ public class login extends AppCompatActivity {
                 fpass = password;
                 String user = inputuser.getText().toString();
                 users = user;
-                databaseReference.child("Current").child("currentuser").setValue(users);
 
                 if(TextUtils.isEmpty(user)) {
                     Toast.makeText(getApplicationContext(), "A Username is required!", Toast.LENGTH_SHORT).show();
@@ -193,12 +193,14 @@ public class login extends AppCompatActivity {
 
                                                                 if(pinned.equals("New")){
                                                                     System.out.println(pinned);
+                                                                    databaseReference.child("Current").child("currentuser").setValue(users);
                                                                     Intent intent = new Intent(login.this, newpin.class);
                                                                     startActivity(intent);
                                                                     finish();
                                                                 }
                                                                 else if(pinned.equals("Old")){
                                                                     System.out.println(pinned);
+                                                                    databaseReference.child("Current").child("currentuser").setValue(users);
                                                                     Intent intent = new Intent(login.this, enterpin.class);
                                                                     startActivity(intent);
                                                                     finish();

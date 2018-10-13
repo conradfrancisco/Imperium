@@ -50,7 +50,8 @@ public class enterpin extends AppCompatActivity {
         oldpb = (ProgressBar) findViewById(R.id.oldprogressbar);
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference().child("Users");
-
+        Intent intent = new Intent(enterpin.this, GeofenceService.class);
+        stopService(intent);
         oldsubmit.setOnClickListener(new View.OnClickListener(){
 
             @Override

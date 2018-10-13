@@ -72,13 +72,14 @@ public class GeofenceService extends Service {
 
         timer = new Timer();
         initializeTimerTask();
-        timer.schedule(timerTask, 5000, 5000);
+        timer.schedule(timerTask, 60000, 5000);
 
     }
 
     public void initializeTimerTask() {
         timerTask = new TimerTask() {
             public void run() {
+
 
                 getCurrentChildUser();
             }
@@ -163,7 +164,7 @@ public class GeofenceService extends Service {
 
                             else {
 
-                                Toast.makeText(getApplicationContext(), "TasksStatus!", Toast.LENGTH_LONG).show();
+                                Log.d("GeoService", "No Tasks Yet");
 
                             }
                         }

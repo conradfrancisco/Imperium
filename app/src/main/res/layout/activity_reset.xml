@@ -4,19 +4,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@drawable/bg"
+    android:background="@drawable/gradient"
     android:id="@+id/constraintreset"
     android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/logo1"
-        android:layout_width="349dp"
-        android:layout_height="169dp"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/icon" />
@@ -32,16 +32,18 @@
     <EditText
         android:id="@+id/email"
         android:layout_width="0dp"
-        android:layout_height="57dp"
+        android:layout_height="48dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="36dp"
+        android:drawableLeft="@drawable/ic_action_email"
+        android:background="@drawable/rounded_corner"
+        android:ems="10"
         android:hint="Email Address"
         android:inputType="text"
         android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -50,7 +52,7 @@
         style="?android:attr/progressBarStyle"
 
         android:layout_width="0dp"
-        android:layout_height="33dp"
+        android:layout_height="24dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
@@ -66,18 +68,23 @@
 
     <Button
         android:id="@+id/reset"
-        android:layout_width="129dp"
-        android:layout_height="34dp"
+        android:layout_width="112dp"
+        android:layout_height="36dp"
+        android:layout_marginBottom="40dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="40dp"
-        android:background="@drawable/bg"
-        android:text="RESET"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/loginbutton"
+        android:text="Reset Now"
+        android:textStyle="normal"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
         android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/email" />
+        app:layout_constraintTop_toBottomOf="@+id/email"
+        app:layout_constraintVertical_bias="0.766" />
 
     <TextView
         android:id="@+id/textView"
@@ -85,14 +92,13 @@
         android:layout_height="50dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="48dp"
         android:text="@string/reset"
+        android:textAllCaps="false"
         android:textColor="@android:color/background_light"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logo1" />
-
 
 </android.support.constraint.ConstraintLayout>

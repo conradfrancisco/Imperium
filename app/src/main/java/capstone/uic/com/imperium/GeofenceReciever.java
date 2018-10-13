@@ -14,12 +14,10 @@ public class GeofenceReciever extends BroadcastReceiver {
             context.startService(new Intent(context, GeofenceService.class));
 
         }
-
-        else {
-
-            context.startService(new Intent(context, GeofenceService.class));
-
-        }
+//        else{
+//
+//            context.startService(new Intent(context, GeofenceService.class));
+//        }
 
     }
 }

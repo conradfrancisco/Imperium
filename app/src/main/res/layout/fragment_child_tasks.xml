@@ -4,12 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient"
     tools:context=".ChildTasksFragment">
 
     <Spinner
         android:id="@+id/namespin2"
         style="@android:style/Widget.Holo.Light.Spinner"
         android:layout_width="0dp"
+        android:background="@drawable/rounded_corner"
         android:layout_height="37dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
@@ -29,7 +31,7 @@
         android:fontFamily="@font/roboto"
         android:text="@string/ChildTasks"
         android:textAlignment="center"
-        android:textColor="@android:color/black"
+        android:textColor="@android:color/white"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,7 +43,9 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:textSize="20sp"
         android:layout_marginTop="25dp"
+        android:background="@drawable/rounded_corner"
         android:fontFamily="@font/roboto"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -66,6 +70,8 @@
     <Button
         android:id="@+id/submitb"
         android:layout_width="wrap_content"
+        android:background="@drawable/loginbutton"
+        style="@android:style/Widget.Button.Small"
         android:layout_height="wrap_content"
         android:layout_marginBottom="100dp"
         android:layout_marginEnd="8dp"
@@ -78,6 +84,8 @@
     <Button
         android:id="@+id/verify"
         android:layout_width="wrap_content"
+        android:background="@drawable/loginbutton"
+        style="@android:style/Widget.Button.Small"
         android:layout_height="wrap_content"
         android:layout_marginBottom="100dp"
         android:layout_marginEnd="8dp"
@@ -101,6 +109,23 @@
         android:textSize="30sp"
         android:textStyle="bold"
         android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/assigntask" />
+
+    <TextView
+        android:id="@+id/statusb1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/roboto"
+        android:text="You have assigned a task already, Please wait."
+        android:textAlignment="center"
+        android:textSize="25sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/assigntask" />

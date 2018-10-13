@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient"
     android:id="@+id/constraintenterpin"
     tools:context="capstone.uic.com.imperium.newpin">
 
@@ -39,7 +40,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="35dp"
         android:text="Confirm your IDENTITY, ENTER your PIN"
-        android:textColor="@color/Black"
+        android:textColor="@color/White"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -53,6 +54,8 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="60dp"
         android:layout_marginEnd="8dp"
+        android:background="@drawable/loginbutton"
+        style="@android:style/Widget.Button.Small"
         android:layout_marginStart="8dp"
         android:text="Submit"
         android:textColor="@color/Black"
@@ -67,6 +70,7 @@
         android:visibility="gone"
         android:layout_width="31dp"
         android:layout_height="37dp"
+        android:color="@drawable/progressbar"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="8dp"

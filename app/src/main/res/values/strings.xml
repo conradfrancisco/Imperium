@@ -18,7 +18,7 @@
     <string name="ChildActivities">Please Select Child to Monitor Activties</string>
     <string name="ChildDevice">Please Select Child to Monitor Device</string>
     <string name="ChildTasks">Please Select Child to Assign a Task</string>
-    <string name="ChildStatus">Your Child Last Task has been marked as finished. Please Verify!</string>
+    <string name="ChildStatus">Your Child\'s Last Task has been marked as finished. Please Verify!</string>
     <string name="MapActivities">Please Select Child to Monitor Location</string>
     <string name="title_activity_maps">Map</string>
     <string-array name="tasks_array">
