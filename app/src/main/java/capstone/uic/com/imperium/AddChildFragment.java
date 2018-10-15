@@ -94,8 +94,8 @@ public class AddChildFragment extends Fragment {
         ref1 = FirebaseDatabase.getInstance().getReference("Users");
         ref2 = FirebaseDatabase.getInstance().getReference("Users");
         ref3 = FirebaseDatabase.getInstance().getReference();
-        ref4 = FirebaseDatabase.getInstance().getReference();
-        ref5 = FirebaseDatabase.getInstance().getReference();
+        ref4 = FirebaseDatabase.getInstance().getReference("Users");
+        ref5 = FirebaseDatabase.getInstance().getReference("Users");
         ref6 = FirebaseDatabase.getInstance().getReference();
         getCurrentUser();
 
@@ -201,17 +201,17 @@ public class AddChildFragment extends Fragment {
         mListener = null;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-    }
-    @Override
-    public void onStop() {
-        super.onStop();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
-
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
+//    }
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
+//
+//    }
 
     private void getCurrentUser(){
 

@@ -58,7 +58,6 @@ public class mainmenu extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainmenu);
-        getCurrentUser();
         geo = new GeofenceService(this);
         mServiceIntent = new Intent(this, geo.getClass());
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -70,6 +69,7 @@ public class mainmenu extends AppCompatActivity
             useremail = users.getEmail();
 
         }
+        getCurrentUser();
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -293,15 +293,16 @@ public class mainmenu extends AppCompatActivity
 
         try{
 
-            String[] app = useremail.split("@");
+            final String[] app = useremail.split("@");
+            System.out.println(app[0]);
             DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-            getuser.child(app[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+            getuser.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
 
                     if(dataSnapshot != null){
 
-                        String users = dataSnapshot.getValue(String.class);
+                        String users = dataSnapshot.child(app[0]).getValue(String.class);
                         try{
 
                             if(users!=null){

@@ -4,7 +4,7 @@
     <string name="reset">Please enter the valid Email Address you have registered to Imperium.</string>
     <string name="pin_content_desc">PIN input field</string>
     <string name="pin_label_text">Please Enter your PIN</string>
-    <string name="title_activity_mainmenu">Main Menu</string>
+    <string name="title_activity_mainmenu">Imperium v.01</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>

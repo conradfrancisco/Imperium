@@ -50,6 +50,7 @@ public class ChildTasksFragment extends Fragment {
     String values = "";
     String array[];
     String status = "";
+    String gets = "";
 
     private OnFragmentInteractionListener mListener;
 
@@ -161,7 +162,7 @@ public class ChildTasksFragment extends Fragment {
 
                                             else{
 
-                                                Log.d("ChildRecieve", "No Child has been added yet.");
+                                                Log.d("ChildReceive", "No Child has been added yet.");
 
                                             }
 
@@ -178,7 +179,7 @@ public class ChildTasksFragment extends Fragment {
 
                                     else {
 
-                                        Log.d("ChildRecieve", "No Child has been added yet.");
+                                        Log.d("ChildReceive", "No Child has been added yet.");
 
                                     }
 
@@ -296,6 +297,7 @@ public class ChildTasksFragment extends Fragment {
                         if(status!=null && status.equals("1")){
 
                             statusb.setVisibility(View.VISIBLE);
+                            statusb1.setVisibility(View.GONE);
                             verify.setVisibility(View.VISIBLE);
                             System.out.println("Current Value: "+status);
 
@@ -360,18 +362,6 @@ public class ChildTasksFragment extends Fragment {
                 throw new RuntimeException(context.toString()
                         + " must implement OnFragmentInteractionListener");
             }
-        }
-
-        @Override
-        public void onResume () {
-            super.onResume();
-            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-        }
-        @Override
-        public void onStop () {
-            super.onStop();
-            ((AppCompatActivity) getActivity()).getSupportActionBar().show();
-
         }
 
         @Override

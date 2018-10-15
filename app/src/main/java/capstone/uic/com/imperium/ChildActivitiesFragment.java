@@ -287,7 +287,7 @@ public class ChildActivitiesFragment extends Fragment {
                             else if(appname.equals("Chrome")){
 
                                 ref3 = FirebaseDatabase.getInstance().getReference("Users");
-                                ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.android,chrome");
+                                ref3.child(user).child("Children").child(passemails).child("BlockedApps").setValue("com.android.chrome");
                                 Toast.makeText(getActivity(), "Success", Toast.LENGTH_LONG).show();
                                 startActivity(new Intent(getActivity(), mainmenu.class));
                             }
@@ -383,18 +383,18 @@ public class ChildActivitiesFragment extends Fragment {
 
 
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-    }
-    @Override
-    public void onStop() {
-        super.onStop();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
-
-    }
+//
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
+//    }
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
+//
+//    }
 
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {

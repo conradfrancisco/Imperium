@@ -260,17 +260,17 @@ public class ProfileFragment extends Fragment {
 
         void onFragmentInteraction(Uri uri);
     }
-    @Override
-    public void onResume() {
-        super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-    }
-    @Override
-    public void onStop() {
-        super.onStop();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
-
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
+//    }
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
+//
+//    }
     private void openFileChooser() {
 
         try{
