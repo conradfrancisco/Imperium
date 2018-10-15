@@ -124,7 +124,7 @@ public class ChildTasksFragment extends Fragment {
 
                         catch(Exception e){
 
-                            Log.e("New Pin Registration", e.getMessage(), e);
+                            Log.e("getChildren", e.getMessage(), e);
 
                         }
 
@@ -161,7 +161,7 @@ public class ChildTasksFragment extends Fragment {
 
                                             else{
 
-                                                Toast.makeText(getActivity(), "Children not Found!", Toast.LENGTH_SHORT).show();
+                                                Log.d("ChildRecieve", "No Child has been added yet.");
 
                                             }
 
@@ -178,7 +178,7 @@ public class ChildTasksFragment extends Fragment {
 
                                     else {
 
-                                        Toast.makeText(getActivity(), "No child exists!", Toast.LENGTH_LONG).show();
+                                        Log.d("ChildRecieve", "No Child has been added yet.");
 
                                     }
 
@@ -204,7 +204,7 @@ public class ChildTasksFragment extends Fragment {
 
                 else {
 
-                    Toast.makeText(getActivity(), "No child has been added yet!", Toast.LENGTH_LONG).show();
+                    Log.d("ChildRecieve", "No Child has been added yet.");
 
                 }
 
@@ -219,21 +219,32 @@ public class ChildTasksFragment extends Fragment {
         });
 
         submit.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
-                ref2 = FirebaseDatabase.getInstance().getReference("Users");
-                ref3 = FirebaseDatabase.getInstance().getReference("Users");
-                ref4 = FirebaseDatabase.getInstance().getReference("Users");
-                ref2.child(user).child("Children").child(passemails).child("Tasks").child("Status").setValue("1");
-                ref3.child(user).child("Children").child(passemails).child("Tasks").child("To-Do").setValue(assigntask.getText().toString());
-                ref4.child(user).child("Children").child(passemails).child("HardStatus").setValue("0");
-                assigntask.setText(null);
-                submit.setVisibility(View.GONE);
-                verify.setVisibility(View.VISIBLE);
-                if(status.equals("0")){
+                try{
 
-                    statusb1.setVisibility(View.VISIBLE);
+                    ref2 = FirebaseDatabase.getInstance().getReference("Users");
+                    ref3 = FirebaseDatabase.getInstance().getReference("Users");
+                    ref4 = FirebaseDatabase.getInstance().getReference("Users");
+                    ref2.child(user).child("Children").child(passemails).child("Tasks").child("Status").setValue("1");
+                    ref3.child(user).child("Children").child(passemails).child("Tasks").child("To-Do").setValue(assigntask.getText().toString());
+                    ref4.child(user).child("Children").child(passemails).child("HardStatus").setValue("0");
+                    assigntask.setText(null);
+                    submit.setVisibility(View.GONE);
+                    verify.setVisibility(View.VISIBLE);
+                    if(status.equals("0")){
+
+                        statusb1.setVisibility(View.VISIBLE);
+
+                    }
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("onSubmitClick", e.getMessage(), e);
 
                 }
 
@@ -245,12 +256,23 @@ public class ChildTasksFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                submit.setVisibility(View.VISIBLE);
-                verify.setVisibility(View.GONE);
-                ref4 = FirebaseDatabase.getInstance().getReference("Users");
-                ref4.child(user).child("Children").child(passemails).child("HardStatus").setValue("0");
-                ref5 = FirebaseDatabase.getInstance().getReference("Users");
-                ref5.child(user).child("Children").child(passemails).child("Tasks").child("Status").setValue("0");
+                try{
+
+                    submit.setVisibility(View.VISIBLE);
+                    verify.setVisibility(View.GONE);
+                    statusb1.setVisibility(View.GONE);
+                    ref4 = FirebaseDatabase.getInstance().getReference("Users");
+                    ref4.child(user).child("Children").child(passemails).child("HardStatus").setValue("0");
+                    ref5 = FirebaseDatabase.getInstance().getReference("Users");
+                    ref5.child(user).child("Children").child(passemails).child("Tasks").child("Status").setValue("0");
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("onVerify", e.getMessage(), e);
+
+                }
 
             }
         });
@@ -260,49 +282,59 @@ public class ChildTasksFragment extends Fragment {
 
     public void getStatus(final String passemails){
 
-        ref5 = FirebaseDatabase.getInstance().getReference("Users");
-        ref5.child(user).addValueEventListener(new ValueEventListener() {
+        try{
 
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            ref5 = FirebaseDatabase.getInstance().getReference("Users");
+            ref5.child(user).addValueEventListener(new ValueEventListener() {
 
-                status = dataSnapshot.child("Children").child(passemails).child("HardStatus").getValue(String.class);
-                try{
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    if(status!=null && status.equals("1")){
+                    status = dataSnapshot.child("Children").child(passemails).child("HardStatus").getValue(String.class);
+                    try{
 
-                        statusb.setVisibility(View.VISIBLE);
-                        verify.setVisibility(View.VISIBLE);
-                        System.out.println("Current Value: "+status);
+                        if(status!=null && status.equals("1")){
+
+                            statusb.setVisibility(View.VISIBLE);
+                            verify.setVisibility(View.VISIBLE);
+                            System.out.println("Current Value: "+status);
+
+                        }
+                        else if(status.equals("0")){
+
+                            statusb.setVisibility(View.GONE);
+                            verify.setVisibility(View.GONE);
+                            System.out.println("Current Value: "+status);
+
+                        }
+                        else{
+
+                            Toast.makeText(getActivity(), "Tasks not found!", Toast.LENGTH_LONG).show();
+
+                        }
 
                     }
-                    else if(status.equals("0")){
 
-                        statusb.setVisibility(View.GONE);
-                        verify.setVisibility(View.GONE);
-                        System.out.println("Current Value: "+status);
+                    catch(Exception e){
 
-                    }
-                    else{
-
-                        Toast.makeText(getActivity(), "Tasks not found!", Toast.LENGTH_LONG).show();
-
+                        Log.e("Child Tasks", e.getMessage(), e);
                     }
 
                 }
 
-                catch(Exception e){
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    Log.e("Child Tasks", e.getMessage(), e);
                 }
+            });
 
-            }
+        }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        catch(Exception e){
 
-            }
-        });
+            Log.e("onGetStatus", e.getMessage(), e);
+
+        }
 
     }
 

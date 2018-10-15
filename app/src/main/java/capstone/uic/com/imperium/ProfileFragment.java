@@ -28,6 +28,8 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,6 +60,7 @@ public class ProfileFragment extends Fragment {
     private CircleImageView circleImageView;
     private StorageReference up;
     private DatabaseReference ref, ref1;
+    private FirebaseAuth auth;
     private com.google.firebase.storage.UploadTask uploadTask;
     private ProgressBar progress;
     private Uri mImageUri;
@@ -101,6 +104,13 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
 
+        auth = FirebaseAuth.getInstance();
+        FirebaseUser users = auth.getCurrentUser();
+        if (users != null) {
+
+            email = users.getEmail();
+
+        }
         getCurrentUser();
         circleImageView = (CircleImageView) view.findViewById(R.id.profilepic);
         hint = (TextView) view.findViewById(R.id.hint);
@@ -149,11 +159,7 @@ public class ProfileFragment extends Fragment {
                 pin.setVisibility(View.VISIBLE);
                 name.setVisibility(View.VISIBLE);
                 profile.setVisibility(View.VISIBLE);
-
                 name.setText(namez);
-
-                Snackbar sn = Snackbar.make(view, "UPDATE", Snackbar.LENGTH_SHORT);
-                sn.show();
 
             }
         });
@@ -171,45 +177,56 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Please confirm action!");
-                builder.setMessage("Are you sure you want to commit changes?");
-                builder.setIcon(R.drawable.icon);
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                try{
 
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Please confirm action!");
+                    builder.setMessage("Are you sure you want to commit changes?");
+                    builder.setIcon(R.drawable.icon);
+                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
-                        newnamez = name.getText().toString();
-                        setUserFullName(newnamez);
-                        refreshName();
-                        fab.setVisibility(View.VISIBLE);
-                        name2.setVisibility(View.VISIBLE);
-                        email2.setVisibility(View.VISIBLE);
-                        hint.setVisibility(View.GONE);
-                        sab.setVisibility(View.GONE);
-                        pass.setVisibility(View.GONE);
-                        pin.setVisibility(View.GONE);
-                        name.setVisibility(View.GONE);
-                        profile.setVisibility(View.GONE);
-                        progress.setVisibility(View.GONE);
-                        startActivity(new Intent(getActivity(), mainmenu.class));
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
 
-                    }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                            newnamez = name.getText().toString();
+                            setUserFullName(newnamez);
+                            refreshName();
+                            fab.setVisibility(View.VISIBLE);
+                            name2.setVisibility(View.VISIBLE);
+                            email2.setVisibility(View.VISIBLE);
+                            hint.setVisibility(View.GONE);
+                            sab.setVisibility(View.GONE);
+                            pass.setVisibility(View.GONE);
+                            pin.setVisibility(View.GONE);
+                            name.setVisibility(View.GONE);
+                            profile.setVisibility(View.GONE);
+                            progress.setVisibility(View.GONE);
+                            startActivity(new Intent(getActivity(), mainmenu.class));
 
-                        dialogInterface.dismiss();
-                        Snackbar sn = Snackbar.make(getView(), "Cancelled", Snackbar.LENGTH_SHORT);
-                        sn.show();
+                        }
+                    });
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                            dialogInterface.dismiss();
+                            Snackbar sn = Snackbar.make(getView(), "Cancelled", Snackbar.LENGTH_SHORT);
+                            sn.show();
 
 
-                    }
-                });
-                android.support.v7.app.AlertDialog alert = builder.create();
-                alert.show();
+                        }
+                    });
+                    android.support.v7.app.AlertDialog alert = builder.create();
+                    alert.show();
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("onClickSave", e.getMessage(), e);
+
+                }
+
 
             }
         });
@@ -256,10 +273,18 @@ public class ProfileFragment extends Fragment {
     }
     private void openFileChooser() {
 
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select image"), PICK_IMAGE_REQUEST);
+        try{
+
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Select image"), PICK_IMAGE_REQUEST);
+        }
+
+        catch(Exception e){
+
+            Log.e("onOpenFileChoose", e.getMessage(), e);
+        }
     }
 
     @Override
@@ -307,52 +332,61 @@ public class ProfileFragment extends Fragment {
 
     private void getUrl(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users").child(user);
-        getuser.child("ProfilePicture").child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if( dataSnapshot != null){
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users").child(user);
+            getuser.child("ProfilePicture").child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if( dataSnapshot != null){
 
-                        String urladdz = dataSnapshot.getValue(String.class);
-                        if(urladdz!=null){
+                        try{
 
-                            urladd = urladdz;
-                            System.out.println(urladd);
-                            Glide.with(getActivity()).load(urladd).into(circleImageView);
+                            String urladdz = dataSnapshot.getValue(String.class);
+                            if(urladdz!=null){
+
+                                urladd = urladdz;
+                                System.out.println(urladd);
+                                Glide.with(getActivity()).load(urladd).into(circleImageView);
+                            }
+
+                            else{
+
+                                Toast.makeText(getActivity(), "URL is EMPTY", Toast.LENGTH_SHORT).show();
+                            }
                         }
 
-                        else{
+                        catch(Exception e){
 
-                            Toast.makeText(getActivity(), "URL is EMPTY", Toast.LENGTH_SHORT).show();
+                            Log.e("No URLS found", e.getMessage(), e);
+
                         }
-                    }
 
-                    catch(Exception e){
-
-                        Log.e("No URLS found", e.getMessage(), e);
 
                     }
+                    else {
+
+                        Log.d("No URLS found", "No URLS found");
+
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
 
 
                 }
-                else {
+            });
+        }
 
-                    Toast.makeText(getActivity(), "URL is EMPTY", Toast.LENGTH_SHORT).show();
+        catch(Exception e){
 
-                }
+            Log.e("onGetURL", e.getMessage(), e);
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-
-
-            }
-        });
+        }
 
     }
 
@@ -433,182 +467,220 @@ public class ProfileFragment extends Fragment {
 
 
     private void getCurrentUser(){
+        try{
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-        getuser.child("currentuser").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            String[] app = email.split("@");
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
+            getuser.child(app[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                if( dataSnapshot != null){
+                    if( dataSnapshot != null){
 
-                    try{
+                        try{
 
-                        String userz = dataSnapshot.getValue(String.class);
-                        if(userz!=null){
+                            String userz = dataSnapshot.getValue(String.class);
+                            if(userz!=null){
 
-                            user = userz;
-                            getName();
+                                user = userz;
+                                getName();
+
+                            }
+                            else{
+
+                                Log.d("onGetCurrentUser", "No Current User Found");
+
+                            }
 
                         }
-                        else{
 
-                            Toast.makeText(getActivity(), "Current User is not Found!", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("CurrentUser", e.getMessage(), e);
 
                         }
-
                     }
 
-                    catch(Exception e){
-
-                        Log.e("CurrentUser", e.getMessage(), e);
-
-                    }
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
+        }
 
+        catch(Exception e){
+
+            Log.e("CurrentUser", e.getMessage(), e);
+        }
     }
 
     private void getName(){
 
-        DatabaseReference getname = FirebaseDatabase.getInstance().getReference().child("Users");
-        getname.child(user).child("fullname").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getname = FirebaseDatabase.getInstance().getReference().child("Users");
+            getname.child(user).child("fullname").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
 
-                        String namez1 = dataSnapshot.getValue(String.class);
-                        if(namez1!=null){
+                        try{
 
-                            namez = namez1;
-                            getEmail();
+                            String namez1 = dataSnapshot.getValue(String.class);
+                            if(namez1!=null){
+
+                                namez = namez1;
+                                getEmail();
+                            }
+                            else{
+
+                                Toast.makeText(getActivity(), "Name is not Found!", Toast.LENGTH_SHORT).show();
+                            }
+
                         }
-                        else{
 
-                            Toast.makeText(getActivity(), "Name is not Found!", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("GetName", e.getMessage(), e);
+
                         }
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("GetName", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
 
-            }
-        });
+        }
+
+        catch(Exception e){
+
+            Log.e("getName", e.getMessage(), e);
+
+        }
+
 
     }
 
     private void refreshName(){
 
-        DatabaseReference getname = FirebaseDatabase.getInstance().getReference().child("Users");
-        getname.child(user).child("fullname").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getname = FirebaseDatabase.getInstance().getReference().child("Users");
+            getname.child(user).child("fullname").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
+
+                        try{
 
 
-                        String namezz1 = dataSnapshot.getValue(String.class);
-                        if(namezz1!=null){
+                            String namezz1 = dataSnapshot.getValue(String.class);
+                            if(namezz1!=null){
 
-                            namezz = namezz1;
-                            name2.setText(namezz);
+                                namezz = namezz1;
+                                name2.setText(namezz);
+                            }
+                            else {
+
+
+                                Log.d("onRefresh", "No Name Retrieved");
+                            }
+
                         }
-                        else {
 
+                        catch(Exception e){
 
-                            Toast.makeText(getActivity(), "Name is not Found!", Toast.LENGTH_SHORT).show();
+                            Log.e("Refresh", e.getMessage(), e);
+
                         }
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("Refresh", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
 
-            }
-        });
+        }
+
+        catch(Exception e){
+
+            Log.e("onRefresh", e.getMessage(), e);
+
+        }
+
 
     }
 
     private void getEmail(){
 
-        DatabaseReference getemail = FirebaseDatabase.getInstance().getReference().child("Users");
-        getemail.child(user).child("email").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getemail = FirebaseDatabase.getInstance().getReference().child("Users");
+            getemail.child(user).child("email").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
 
-                        String emaild = dataSnapshot.getValue(String.class);
-                        if(emaild!=null){
+                        try{
 
-                            email = emaild;
-                            System.out.println(user);
-                            name2.setText(namez);
-                            email2.setText(email);
-                            getUrl();
+                            String emaild = dataSnapshot.getValue(String.class);
+                            if(emaild!=null){
+
+                                email = emaild;
+                                System.out.println(user);
+                                name2.setText(namez);
+                                email2.setText(email);
+                                getUrl();
+
+                            }
+                            else{
+
+                                Log.d("onGetEmail", "No Email Retrieved");
+
+                            }
+
 
                         }
-                        else{
 
-                            Toast.makeText(getActivity(), "Email is not Found!", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("Emails", e.getMessage(), e);
 
                         }
-
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("Emails", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
 
-            }
-        });
+        }
 
+        catch(Exception e){
+
+            Log.e("onRefresh", e.getMessage(), e);
+
+        }
     }
 
 }

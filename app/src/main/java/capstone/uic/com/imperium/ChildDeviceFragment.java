@@ -100,160 +100,169 @@ public class ChildDeviceFragment extends Fragment {
         }
         System.out.println(email);
         System.out.println(user);
+        try{
 
-        ref1 = FirebaseDatabase.getInstance().getReference("Users");
-        ref1.child(user).child("AllChildren").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            ref1 = FirebaseDatabase.getInstance().getReference("Users");
+            ref1.child(user).child("AllChildren").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot != null){
+                    if(dataSnapshot != null){
 
 
-                    for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
+                        for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
 
-                        if(nameSnapshot!=null){
+                            if(nameSnapshot!=null){
 
-                            String FName = nameSnapshot.getKey();
-                            names.add(FName);
-                            System.out.println(FName);
+                                String FName = nameSnapshot.getKey();
+                                names.add(FName);
+                                System.out.println(FName);
+
+                            }
+                            else{
+
+                                Log.d("onChildRetrieve", "No Child Retrieved");
+
+                            }
 
                         }
-                        else{
 
-                            Toast.makeText(getActivity(), "No child has been added yet!", Toast.LENGTH_LONG).show();
+                        ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
+                        namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinname.setAdapter(namesAdapter);
+                        spinname.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                        }
+                                TextView tv = (TextView)view;
+                                values = tv.getText().toString();
+                                System.out.println(values);
+                                ref = FirebaseDatabase.getInstance().getReference("Users");
+                                ref.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                        if(dataSnapshot != null){
+
+                                            passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                                            try{
+
+                                                System.out.println("I am" + " " + passemails);
+                                                ref2 = FirebaseDatabase.getInstance().getReference("Users");
+                                                ref2.addValueEventListener(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                                        if(dataSnapshot != null){
+
+                                                            String val = dataSnapshot.child(user).child("Children").child(passemails).child("BlockDevice").getValue(String.class);
+                                                            if(val!=null){
+
+                                                                if(val.equals("1")){
+
+                                                                    childname.setVisibility(View.VISIBLE);
+                                                                    status.setVisibility(View.VISIBLE);
+                                                                    childname.setText("Your child, " +values+ "'s device is currently:");
+                                                                    status.setText("BLOCKED");
+                                                                    disable.setVisibility(View.VISIBLE);
+                                                                    enable.setVisibility(View.GONE);
+
+                                                                }
+                                                                else if (val.equals("0")){
+
+
+                                                                    childname.setVisibility(View.VISIBLE);
+                                                                    status.setVisibility(View.VISIBLE);
+                                                                    childname.setText("Your child, " +values+ "'s device is currently:");
+                                                                    status.setText("UNBLOCKED");
+                                                                    enable.setVisibility(View.VISIBLE);
+                                                                    disable.setVisibility(View.GONE);
+
+                                                                }
+
+                                                            }
+                                                            else{
+
+                                                                Log.d("onChildRetrieve", "No Child Retrieved");
+
+                                                            }
+
+
+                                                        }
+
+                                                        else {
+
+                                                            Log.d("onChildRetrieve", "No Child Retrieved");
+
+                                                        }
+
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                    }
+                                                });
+                                            }
+
+                                            catch(Exception e){
+
+                                                Log.e("onStatus", e.getMessage(), e);
+
+                                            }
+
+
+                                        }
+
+                                        else {
+
+                                            Log.d("onChildRetrieve", "No Child Retrieved");
+
+                                        }
+
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> adapterView) {
+
+                            }
+                        });
+
 
                     }
 
-                    ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
-                    namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinname.setAdapter(namesAdapter);
-                    spinname.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    else {
 
-                            TextView tv = (TextView)view;
-                            values = tv.getText().toString();
-                            System.out.println(values);
-                            ref = FirebaseDatabase.getInstance().getReference("Users");
-                            ref.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Log.d("onChildRetrieve", "No Child Retrieved");
 
-                                    if(dataSnapshot != null){
-
-                                        passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
-                                        try{
-
-                                            System.out.println("I am" + " " + passemails);
-                                            ref2 = FirebaseDatabase.getInstance().getReference("Users");
-                                            ref2.addValueEventListener(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                                    if(dataSnapshot != null){
-
-                                                        String val = dataSnapshot.child(user).child("Children").child(passemails).child("BlockDevice").getValue(String.class);
-                                                        if(val!=null){
-
-                                                            if(val.equals("1")){
-
-                                                                childname.setVisibility(View.VISIBLE);
-                                                                status.setVisibility(View.VISIBLE);
-                                                                childname.setText("Your child, " +values+ "'s device is currently:");
-                                                                status.setText("BLOCKED");
-                                                                disable.setVisibility(View.VISIBLE);
-                                                                enable.setVisibility(View.GONE);
-
-                                                            }
-                                                            else if (val.equals("0")){
-
-
-                                                                childname.setVisibility(View.VISIBLE);
-                                                                status.setVisibility(View.VISIBLE);
-                                                                childname.setText("Your child, " +values+ "'s device is currently:");
-                                                                status.setText("UNBLOCKED");
-                                                                enable.setVisibility(View.VISIBLE);
-                                                                disable.setVisibility(View.GONE);
-
-                                                            }
-
-                                                        }
-                                                        else{
-
-                                                            Toast.makeText(getActivity(), "No data has been specified!", Toast.LENGTH_LONG).show();
-
-                                                        }
-
-
-                                                    }
-
-                                                    else {
-
-                                                        Toast.makeText(getActivity(), "No data retrieved!", Toast.LENGTH_LONG).show();
-
-                                                    }
-
-                                                }
-
-                                                @Override
-                                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                }
-                                            });
-                                        }
-
-                                        catch(Exception e){
-
-                                            Log.e("New Pin Registration", e.getMessage(), e);
-
-                                        }
-
-
-                                    }
-
-                                    else {
-
-                                        Toast.makeText(getActivity(), "No child exists!", Toast.LENGTH_LONG).show();
-
-                                    }
-
-
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
-
-                        }
-
-                        @Override
-                        public void onNothingSelected(AdapterView<?> adapterView) {
-
-                        }
-                    });
-
+                    }
 
                 }
 
-                else {
-
-                    Toast.makeText(getActivity(), "No child has been added yet!", Toast.LENGTH_LONG).show();
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
 
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            });
 
-            }
+        }
 
+        catch(Exception e){
 
-        });
+            Log.e("onStartDeviceBlock", e.getMessage(), e);
+
+        }
 
         disable.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -268,7 +277,7 @@ public class ChildDeviceFragment extends Fragment {
 
                 catch(Exception e){
 
-                    Log.e("New Pin Registration", e.getMessage(), e);
+                    Log.e("onDisable", e.getMessage(), e);
 
                 }
 
@@ -289,7 +298,7 @@ public class ChildDeviceFragment extends Fragment {
 
                 catch(Exception e){
 
-                    Log.e("New Pin Registration", e.getMessage(), e);
+                    Log.e("onEnable", e.getMessage(), e);
 
                 }
 

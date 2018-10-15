@@ -34,7 +34,7 @@ public class AddChildFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     private OnFragmentInteractionListener mListener;
     private ProgressBar progress;
-    private DatabaseReference ref, ref1, ref2, ref3, ref4, ref5;
+    private DatabaseReference ref, ref1, ref2, ref3, ref4, ref5, ref6;
     private String textmessage = "*G DRIVE LINK OF IMPERIUM CHILD APP TO BE INSERTED*";
     private String subjected = "Welcome to Imperium: A Parental Control Application";
     private String username = "noreply.ImperiumMonitoring@gmail.com";
@@ -47,8 +47,7 @@ public class AddChildFragment extends Fragment {
     private Button save1;
     private String mParam1;
     private String mParam2;
-
-
+    private String passval;
 
     public AddChildFragment() {
 
@@ -85,7 +84,7 @@ public class AddChildFragment extends Fragment {
 
         auth = FirebaseAuth.getInstance();
         final FirebaseUser usersz = auth.getCurrentUser();
-
+        passval = usersz.getEmail();
         edit1 = (EditText) view.findViewById(R.id.editText1234);
         edit2 = (EditText) view.findViewById(R.id.editText134);
         save1 = (Button) view.findViewById(R.id.savebutton123);
@@ -97,70 +96,81 @@ public class AddChildFragment extends Fragment {
         ref3 = FirebaseDatabase.getInstance().getReference();
         ref4 = FirebaseDatabase.getInstance().getReference();
         ref5 = FirebaseDatabase.getInstance().getReference();
+        ref6 = FirebaseDatabase.getInstance().getReference();
         getCurrentUser();
 
         save1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                final String usersd = usersz.getEmail();
-                progress.setVisibility(View.VISIBLE);
-                email = edit2.getText().toString();
-                namesd = edit1.getText().toString();
-                System.out.println(email);
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Please confirm action!");
-                builder.setMessage("Are you sure you want to Add this Child?");
-                builder.setIcon(R.drawable.icon);
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                try{
 
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                    final String usersd = usersz.getEmail();
+                    progress.setVisibility(View.VISIBLE);
+                    email = edit2.getText().toString();
+                    namesd = edit1.getText().toString();
+                    System.out.println(email);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Please confirm action!");
+                    builder.setMessage("Are you sure you want to Add this Child?");
+                    builder.setIcon(R.drawable.icon);
+                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
 
-                                try {
-                                    GMailSender sender = new GMailSender(username, password);
-                                    sender.sendMail(subjected, textmessage, username, email);
-                                    System.out.println("OK");
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    try {
+                                        GMailSender sender = new GMailSender(username, password);
+                                        sender.sendMail(subjected, textmessage, username, email);
+                                        System.out.println("OK");
+                                    }
+                                    catch (Exception e) {
+                                        Log.e("SendMail", e.getMessage(), e);
+                                    }
+
                                 }
-                                catch (Exception e) {
-                                    Log.e("SendMail", e.getMessage(), e);
-                                }
+                            }).start();
 
-                            }
-                        }).start();
+                            String split[] = email.split("@");
+                            String split1[] = usersd.split("@");
+                            ref.child(user).child("Children").child(split[0]).child("ChildName").setValue(namesd);
+                            ref2.child(user).child("Children").child(split[0]).child("ChildPass").setValue(pass);
+                            ref1.child(user).child("AllChildren").child(namesd).setValue(split[0]);
+                            ref3.child("Children").child(user).child(split[0]).setValue(true);
+                            ref4.child(user).child("Children").child(split[0]).child("BlockDevice").setValue("0");
+                            ref5.child(user).child("Children").child(split[0]).child("Apps").child("Facebook").setValue(true);
+                            ref6.child("CurrentParent").child(split[0]).setValue(user);
+                            progress.setVisibility(View.GONE);
+                            startActivity(new Intent(getActivity(), mainmenu.class));
 
-                        String split[] = email.split("@");
-                        String split1[] = usersd.split("@");
-                        ref.child(user).child("Children").child(split[0]).child("ChildName").setValue(namesd);
-                        ref2.child(user).child("Children").child(split[0]).child("ChildPass").setValue(pass);
-                        ref1.child(user).child("AllChildren").child(namesd).setValue(split[0]);
-                        ref3.child("Children").child(user).child(split[0]).setValue(true);
-                        ref4.child(user).child("Children").child(split[0]).child("BlockDevice").setValue("0");
-                        ref5.child(user).child("Children").child(split[0]).child("Apps").child("Facebook").setValue(true);
-                        progress.setVisibility(View.GONE);
-                        startActivity(new Intent(getActivity(), mainmenu.class));
+                        }
+                    });
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
 
-                    }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        dialogInterface.dismiss();
-                        Snackbar sn = Snackbar.make(getView(), "Cancelled", Snackbar.LENGTH_SHORT);
-                        sn.show();
-                        edit1.setText(null);
-                        edit2.setText(null);
+                            dialogInterface.dismiss();
+                            Snackbar sn = Snackbar.make(getView(), "Cancelled", Snackbar.LENGTH_SHORT);
+                            sn.show();
+                            edit1.setText(null);
+                            edit2.setText(null);
 
 
-                    }
-                });
-                android.support.v7.app.AlertDialog alert = builder.create();
-                alert.show();
+                        }
+                    });
+                    android.support.v7.app.AlertDialog alert = builder.create();
+                    alert.show();
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("onClickSave", e.getMessage(), e);
+                }
 
             }
         });
@@ -205,46 +215,57 @@ public class AddChildFragment extends Fragment {
 
     private void getCurrentUser(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-        getuser.child("currentuser").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            String[] split = passval.split("@");
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
+            getuser.child(split[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    String userz = dataSnapshot.getValue(String.class);
-                    try{
+                    if(dataSnapshot != null){
 
-                        if(userz!=null){
+                        String userz = dataSnapshot.getValue(String.class);
+                        try{
 
-                            user = userz;
+                            if(userz!=null){
+
+                                user = userz;
+
+                            }
+                            else{
+
+                                Log.d("OnRetrieveUser", "No Current Users Found!");
+
+                            }
 
                         }
-                        else{
 
-                            Toast.makeText(getActivity(), "No Current Users!", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("getCurrentUser", e.getMessage(), e);
 
                         }
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("New Pin Registration", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
+
+        }
+
+        catch(Exception e){
+
+            Log.e("getCurrentUser", e.getMessage(), e);
+
+        }
 
     }
 

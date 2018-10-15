@@ -19,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.goodiebag.pinview.Pinview;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -32,6 +34,8 @@ public class newpin extends AppCompatActivity {
     private Button submit, submit2;
     private Pinview pinView, pinView1;
     private TextView instruction;
+    private FirebaseAuth auth;
+    private String email = "";
     private ProgressBar pb;
     private String pin = " ";
     private String cpin = " ";
@@ -44,6 +48,13 @@ public class newpin extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newpin);
+        auth = FirebaseAuth.getInstance();
+        FirebaseUser users = auth.getCurrentUser();
+        if (users != null) {
+
+            email = users.getEmail();
+
+        }
         getCurrentUser();
 
         pinView = (Pinview) findViewById(R.id.newPinView);
@@ -66,32 +77,42 @@ public class newpin extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                pin = pinView.getValue();
-                System.out.println(pin);
-                pb.setVisibility(View.VISIBLE);
-                System.out.println(pinView);
-                submit.setVisibility(View.GONE);
-                pinView.setVisibility(View.GONE);
-                submit2.setVisibility(View.VISIBLE);
-                pinView1.setVisibility(View.VISIBLE);
-                confirmPin();
+                try{
 
+                    pin = pinView.getValue();
+                    System.out.println(pin);
+                    pb.setVisibility(View.VISIBLE);
+                    System.out.println(pinView);
+                    submit.setVisibility(View.GONE);
+                    pinView.setVisibility(View.GONE);
+                    submit2.setVisibility(View.VISIBLE);
+                    pinView1.setVisibility(View.VISIBLE);
+                    confirmPin();
+                }
+
+                catch(Exception e){
+
+                    Log.e("onSubmitPin", e.getMessage(), e);
+
+                }
             }
         });
 
     }
     public void confirmPin(){
 
-        instruction.setText("Please CONFIRM your NEW PIN!");
-        pb.setVisibility(View.GONE);
+        try{
 
-        submit2.setOnClickListener(new View.OnClickListener() {
+            instruction.setText("Please CONFIRM your NEW PIN!");
+            pb.setVisibility(View.GONE);
 
-            @Override
-            public void onClick(View view) {
+            submit2.setOnClickListener(new View.OnClickListener() {
 
-                pb.setVisibility(View.VISIBLE);
-                cpin = pinView1.getValue();
+                @Override
+                public void onClick(View view) {
+
+                    pb.setVisibility(View.VISIBLE);
+                    cpin = pinView1.getValue();
 
                     try{
 
@@ -128,44 +149,64 @@ public class newpin extends AppCompatActivity {
                     }
 
 
-            }
-        });
+                }
+            });
+
+        }
+
+        catch(Exception e){
+
+            Log.e("onConfirmPin", e.getMessage(), e);
+
+        }
+
 
     }
 
     public void getCurrentUser(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-        getuser.child("currentuser").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if( dataSnapshot != null){
+            String[] nap = email.split("@");
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
+            getuser.child(nap[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    String users = dataSnapshot.getValue(String.class);
-                    if(users!=null){
+                    if( dataSnapshot != null){
 
-                        user = users;
-                        System.out.println(user);
+                        String users = dataSnapshot.getValue(String.class);
+                        if(users!=null){
 
-                    }
-                    else{
+                            user = users;
+                            System.out.println(user);
 
-                        Toast.makeText(newpin.this, "No Current User Retrieved", Toast.LENGTH_SHORT).show();
+                        }
+                        else{
+
+                            Toast.makeText(newpin.this, "No Current User Retrieved", Toast.LENGTH_SHORT).show();
+
+                        }
 
                     }
 
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
+
+        }
+
+        catch(Exception e){
+
+            Log.e("onGetCurrentUser", e.getMessage(), e);
+
+        }
 
     }
     public void onBackPressed(){

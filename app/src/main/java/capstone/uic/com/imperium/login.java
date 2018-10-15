@@ -97,28 +97,38 @@ public class login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                String password = inputpassword.getText().toString();
-                fpass = password;
-                String user = inputuser.getText().toString();
-                users = user;
+                try{
 
-                if(TextUtils.isEmpty(user)) {
-                    Toast.makeText(getApplicationContext(), "A Username is required!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if(TextUtils.isEmpty(password)){
-                    Toast.makeText(getApplicationContext(), "A Password is required!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if(!isConnected){
+                    String password = inputpassword.getText().toString();
+                    fpass = password;
+                    String user = inputuser.getText().toString();
+                    users = user;
 
-                    Toast.makeText(login.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
-                    inputuser.setText("");
-                    inputpassword.setText("");
-                }
-                else {
+                    if(TextUtils.isEmpty(user)) {
+                        Toast.makeText(getApplicationContext(), "A Username is required!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if(TextUtils.isEmpty(password)){
+                        Toast.makeText(getApplicationContext(), "A Password is required!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if(!isConnected){
 
-                    getEmail(user);
+                        Toast.makeText(login.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
+                        inputuser.setText("");
+                        inputpassword.setText("");
+                    }
+                    else {
+
+                        getEmail(user);
+                    }
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("onLoginOuter", e.getMessage(), e);
+
                 }
             }
         });
@@ -155,123 +165,131 @@ public class login extends AppCompatActivity {
     }
     private void getEmail(String user){
 
-        DatabaseReference first = FirebaseDatabase.getInstance().getReference().child("Users").child(user);
-        first.child("email").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot1) {
+        try{
 
-                try{
+            DatabaseReference first = FirebaseDatabase.getInstance().getReference().child("Users").child(user);
+            first.child("email").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot1) {
 
-                    if(dataSnapshot1 != null) {
+                    try{
 
-                        String email = dataSnapshot1.getValue(String.class);
-                        if(email!=null){
+                        if(dataSnapshot1 != null) {
 
-                            ems = email;
-                            DatabaseReference second = FirebaseDatabase.getInstance().getReference().child("Users").child(users);
-                            second.child("pin").addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot2) {
+                            String email = dataSnapshot1.getValue(String.class);
+                            if(email!=null){
 
-                                    if(dataSnapshot2 != null){
+                                ems = email;
+                                DatabaseReference second = FirebaseDatabase.getInstance().getReference().child("Users").child(users);
+                                second.child("pin").addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot2) {
 
-                                        String pin = dataSnapshot2.getValue(String.class);
-                                        if(pin!=null){
+                                        if(dataSnapshot2 != null){
 
-                                            pinned = pin;
+                                            String pin = dataSnapshot2.getValue(String.class);
+                                            if(pin!=null){
 
-                                            System.out.println(fpass);
-                                            System.out.println(ems);
-                                            System.out.println(pinned);
-                                            bar.setVisibility(View.VISIBLE);
-                                            auth.signInWithEmailAndPassword(ems, fpass)
-                                                    .addOnCompleteListener(login.this, new OnCompleteListener<AuthResult>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<AuthResult> task) {
-                                                            bar.setVisibility(View.GONE);
-                                                            if(task.isSuccessful()){
+                                                pinned = pin;
 
-                                                                if(pinned.equals("New")){
-                                                                    System.out.println(pinned);
-                                                                    databaseReference.child("Current").child("currentuser").setValue(users);
-                                                                    Intent intent = new Intent(login.this, newpin.class);
-                                                                    startActivity(intent);
-                                                                    finish();
+                                                System.out.println(fpass);
+                                                System.out.println(ems);
+                                                System.out.println(pinned);
+                                                bar.setVisibility(View.VISIBLE);
+                                                auth.signInWithEmailAndPassword(ems, fpass)
+                                                        .addOnCompleteListener(login.this, new OnCompleteListener<AuthResult>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                                                bar.setVisibility(View.GONE);
+                                                                if(task.isSuccessful()){
+
+                                                                    if(pinned.equals("New")){
+                                                                        System.out.println(pinned);
+                                                                        Intent intent = new Intent(login.this, newpin.class);
+                                                                        startActivity(intent);
+                                                                        finish();
+                                                                    }
+                                                                    else if(pinned.equals("Old")){
+                                                                        System.out.println(pinned);
+                                                                        Intent intent = new Intent(login.this, enterpin.class);
+                                                                        startActivity(intent);
+                                                                        finish();
+                                                                    }
                                                                 }
-                                                                else if(pinned.equals("Old")){
-                                                                    System.out.println(pinned);
-                                                                    databaseReference.child("Current").child("currentuser").setValue(users);
-                                                                    Intent intent = new Intent(login.this, enterpin.class);
-                                                                    startActivity(intent);
-                                                                    finish();
+                                                                else {
+
+                                                                    Toast.makeText(login.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
+                                                                    inputuser.setText("");
+                                                                    inputpassword.setText("");
                                                                 }
-                                                            }
-                                                            else {
 
-                                                                Toast.makeText(login.this, getString(R.string.auth_failed), Toast.LENGTH_LONG).show();
-                                                                inputuser.setText("");
-                                                                inputpassword.setText("");
                                                             }
+                                                        });
 
-                                                        }
-                                                    });
+                                            }
+                                            else{
+
+                                                Toast.makeText(login.this, "Register First.", Toast.LENGTH_LONG).show();
+
+                                            }
+
 
                                         }
-                                        else{
+                                        else {
 
-                                            Toast.makeText(login.this, "Register First.", Toast.LENGTH_LONG).show();
+                                            Toast.makeText(getApplicationContext(), "NO PIN", Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(login.this, register.class);
+                                            startActivity(intent);
+                                            finish();
 
                                         }
-
+                                    }
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
 
                                     }
-                                    else {
-
-                                        Toast.makeText(getApplicationContext(), "NO PIN", Toast.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(login.this, register.class);
-                                        startActivity(intent);
-                                        finish();
-
-                                    }
-                                }
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
-
-                                }
 
 
-                            });
+                                });
+
+                            }
+                            else{
+
+                                Toast.makeText(login.this, "No Email Address Found for this certain Username, Register First.", Toast.LENGTH_LONG).show();
+
+                            }
 
                         }
-                        else{
+                        else {
 
-                            Toast.makeText(login.this, "No Email Address Found for this certain Username, Register First.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Account Not Registered!", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(login.this, register.class);
+                            startActivity(intent);
+                            finish();
 
                         }
+                    }
+
+                    catch(Exception e){
+
+                        Log.e("getEmail", e.getMessage(), e);
 
                     }
-                    else {
-
-                        Toast.makeText(getApplicationContext(), "Account Not Registered!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(login.this, register.class);
-                        startActivity(intent);
-                        finish();
-
-                    }
-                }
-
-                catch(Exception e){
-
-                    Log.e("getEmail", e.getMessage(), e);
 
                 }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
 
-            }
-        });
+        }
+
+        catch(Exception e){
+
+            Log.e("onGetEmailOuter", e.getMessage(), e);
+
+        }
 
     }
     private ConnectivityManager.NetworkCallback connectivityCallback

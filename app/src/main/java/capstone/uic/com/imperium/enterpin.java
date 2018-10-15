@@ -18,6 +18,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.goodiebag.pinview.Pinview;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 public class enterpin extends AppCompatActivity {
 
     FirebaseDatabase firebaseDatabase;
+    private FirebaseAuth auth;
     DatabaseReference databaseReference;
     private Button oldsubmit;
     private Pinview oldpinView;
@@ -37,11 +40,19 @@ public class enterpin extends AppCompatActivity {
     private String olduser = " ";
     private boolean monitoringConnectivity = false;
     boolean isConnected = true;
+    private String email = "";
 
     protected void onCreate(Bundle savedInstanceState){
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enterpin);
+        auth = FirebaseAuth.getInstance();
+        FirebaseUser users = auth.getCurrentUser();
+        if (users != null) {
+
+            email = users.getEmail();
+
+        }
         getCurrentUser();
 
         oldpinView = (Pinview) findViewById(R.id.oldPinView);
@@ -57,11 +68,19 @@ public class enterpin extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                oldpin = oldpinView.getValue();
-                System.out.println(oldpin);
-                oldpb.setVisibility(View.VISIBLE);
-                confirmUser();
+                try{
 
+                    oldpin = oldpinView.getValue();
+                    System.out.println(oldpin);
+                    oldpb.setVisibility(View.VISIBLE);
+                    confirmUser();
+
+                }
+
+                catch(Exception e){
+
+                    Log.e("onSubmitPin", e.getMessage(), e);
+                }
             }
         });
 
@@ -70,113 +89,132 @@ public class enterpin extends AppCompatActivity {
 
     public void confirmUser(){
 
-        oldpb.setVisibility(View.GONE);
-        DatabaseReference getpin = FirebaseDatabase.getInstance().getReference().child("Users").child(olduser);
-        getpin.child("Pin").addListenerForSingleValueEvent(new ValueEventListener() {
+        try{
 
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            oldpb.setVisibility(View.GONE);
+            DatabaseReference getpin = FirebaseDatabase.getInstance().getReference().child("Users").child(olduser);
+            getpin.child("Pin").addListenerForSingleValueEvent(new ValueEventListener() {
 
-                if(dataSnapshot != null){
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
 
-                        oldcpin = dataSnapshot.getValue(String.class);
+                        try{
 
-                        if(oldcpin!=null){
+                            oldcpin = dataSnapshot.getValue(String.class);
 
-                            if(oldpin.equals(oldcpin)){
+                            if(oldcpin!=null){
 
-                                Toast.makeText(getApplicationContext(), "Success!, Identity Verified", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(enterpin.this, mainmenu.class);
-                                startActivity(intent);
-                                finish();
+                                if(oldpin.equals(oldcpin)){
+
+                                    Toast.makeText(getApplicationContext(), "Success!, Identity Verified", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(enterpin.this, mainmenu.class);
+                                    startActivity(intent);
+                                    finish();
+
+                                }
+
+                                else {
+
+                                    Toast.makeText(getApplicationContext(), "PIN does not MATCH!", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(enterpin.this, enterpin.class);
+                                    startActivity(intent);
+                                    finish();
+
+                                }
 
                             }
 
                             else {
 
-                                Toast.makeText(getApplicationContext(), "PIN does not MATCH!", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(enterpin.this, enterpin.class);
-                                startActivity(intent);
-                                finish();
+                                Toast.makeText(getApplicationContext(), "No PIN Retrieved or No Internet Connection", Toast.LENGTH_SHORT).show();
 
                             }
 
                         }
 
-                        else {
+                        catch(Exception e){
 
-                            Toast.makeText(getApplicationContext(), "No PIN Retrieved or No Internet Connection", Toast.LENGTH_SHORT).show();
+                            Log.e("Confirm Pin", e.getMessage(), e);
 
                         }
 
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("Confirm Pin", e.getMessage(), e);
 
                     }
-
 
                 }
 
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+        }
 
-            }
-        });
+        catch(Exception e){
+
+            Log.e("onConfirmUser", e.getMessage(), e);
+        }
+
 
     }
 
 
     public void getCurrentUser(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-        getuser.child("currentuser").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if( dataSnapshot != null){
+            String[] dab = email.split("@");
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
+            getuser.child(dab[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    String oldusers = dataSnapshot.getValue(String.class);
-                    try{
+                    if( dataSnapshot != null){
 
-                        if(oldusers!=null){
+                        String oldusers = dataSnapshot.getValue(String.class);
+                        try{
 
-                            olduser = oldusers;
-                            System.out.println(olduser);
+                            if(oldusers!=null){
+
+                                olduser = oldusers;
+                                System.out.println(olduser);
+
+                            }
+                            else{
+
+                                Log.d("getParentUser", "No Parent User Retrieved");
+
+                            }
 
                         }
-                        else{
+                        catch(Exception e){
 
-                            Toast.makeText(getApplicationContext(), "No Current Parent User!", Toast.LENGTH_SHORT).show();
+                            Log.e("Confirm Pin User", e.getMessage(), e);
 
                         }
 
-                    }
-                    catch(Exception e){
-
-                        Log.e("Confirm Pin User", e.getMessage(), e);
 
                     }
-
 
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
 
+        }
+
+        catch(Exception e){
+
+            Log.e("onConfirmUser", e.getMessage(), e);
+
+        }
     }
     public void onBackPressed(){
 

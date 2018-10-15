@@ -93,8 +93,6 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
-
         mapspin = (Spinner) view.findViewById(R.id.mapspin);
         address = (EditText) view.findViewById(R.id.address);
         save = (Button) view.findViewById(R.id.save);
@@ -116,7 +114,7 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
         }
         else {
 
-            Toast.makeText(getActivity(), "Firebase User is null!", Toast.LENGTH_LONG).show();
+            Log.d("Auth", "No Current User");
 
         }
 
@@ -126,171 +124,187 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
             @Override
             public void onClick(View view) {
 
-                marker1.remove();
-                mCircle.remove();
-                new GetCoordinates().execute(address.getText().toString().replace(" ", "+"));
-                getCurrentUser();
-                startActivity(new Intent(getActivity(), mainmenu.class));
+                try{
+
+                    marker1.remove();
+                    mCircle.remove();
+                    new GetCoordinates().execute(address.getText().toString().replace(" ", "+"));
+                    getCurrentUser();
+                    startActivity(new Intent(getActivity(), mainmenu.class));
+                }
+
+                catch(Exception e){
+
+                    Log.e("onClickSave", e.getMessage(), e);
+                }
             }
 
 
         });
+        try{
 
-        ref1 = FirebaseDatabase.getInstance().getReference("Users");
-        ref1.child(user).child("AllChildren").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            ref1 = FirebaseDatabase.getInstance().getReference("Users");
+            ref1.child(user).child("AllChildren").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot == null){
+                    if(dataSnapshot == null){
 
-                    Toast.makeText(getActivity(), "No Data Retrieved!, Add a Child First", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getActivity(), mainmenu.class));
+                        Log.d("Retrieve", "No Data Retrieved.");
+                        startActivity(new Intent(getActivity(), mainmenu.class));
 
-                }
-                else {
+                    }
+                    else {
 
-                    try{
+                        try{
 
-                        for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
-                            String FName = nameSnapshot.getKey();
-                            if(nameSnapshot!=null){
+                            for (DataSnapshot nameSnapshot : dataSnapshot.getChildren()) {
+                                String FName = nameSnapshot.getKey();
+                                if(nameSnapshot!=null){
 
-                                if(FName != null){
+                                    if(FName != null){
 
-                                    names.add(FName);
-                                    System.out.println(FName);
+                                        names.add(FName);
+                                        System.out.println(FName);
 
-                                    ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
-                                    namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                                    mapspin.setAdapter(namesAdapter);
-                                    mapspin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                        @Override
-                                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                                        ArrayAdapter<String> namesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, names);
+                                        namesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                        mapspin.setAdapter(namesAdapter);
+                                        mapspin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                            @Override
+                                            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                                            TextView tv = (TextView) view;
-                                            values = tv.getText().toString();
-                                            System.out.println("Ako si:" + " " + values);
-                                            getUser();
-                                            maps.clear();
+                                                TextView tv = (TextView) view;
+                                                values = tv.getText().toString();
+                                                System.out.println("Ako si:" + " " + values);
+                                                getUser();
+                                                maps.clear();
 
-                                            DatabaseReference getuser3 = FirebaseDatabase.getInstance().getReference().child("Users");
-                                            getuser3.addValueEventListener(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                DatabaseReference getuser3 = FirebaseDatabase.getInstance().getReference().child("Users");
+                                                getuser3.addValueEventListener(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                                    if (dataSnapshot != null) {
+                                                        if (dataSnapshot != null) {
 
-                                                        passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
-                                                        if(passemails!=null){
+                                                            passemails = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                                                            if(passemails!=null){
 
-                                                            System.out.println("I am" + " " + passemails);
+                                                                System.out.println("I am" + " " + passemails);
 
-                                                            DatabaseReference getuser1 = FirebaseDatabase.getInstance().getReference().child("Children");
-                                                            getuser1.addValueEventListener(new ValueEventListener() {
-                                                                @Override
-                                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                DatabaseReference getuser1 = FirebaseDatabase.getInstance().getReference().child("Children");
+                                                                getuser1.addValueEventListener(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                                                    if (dataSnapshot != null) {
+                                                                        if (dataSnapshot != null) {
 
-                                                                        retrievelat = dataSnapshot.child(user).child(passemails).child("SavedLocation").getValue(String.class);
-                                                                        if(retrievelat!=null){
+                                                                            retrievelat = dataSnapshot.child(user).child(passemails).child("SavedLocation").getValue(String.class);
+                                                                            if(retrievelat!=null){
 
-                                                                            System.out.println("The Saved Location is: "+retrievelat);
-                                                                            String split[] = retrievelat.split(",");
-                                                                            Double l1 = Double.parseDouble(split[0]);
-                                                                            Double l2 = Double.parseDouble(split[1]);
-                                                                            LatLng newer = new LatLng(l1, l2);
-                                                                            moveCamera(newer, "Saved Location");
+                                                                                System.out.println("The Saved Location is: "+retrievelat);
+                                                                                String split[] = retrievelat.split(",");
+                                                                                Double l1 = Double.parseDouble(split[0]);
+                                                                                Double l2 = Double.parseDouble(split[1]);
+                                                                                LatLng newer = new LatLng(l1, l2);
+                                                                                moveCamera(newer, "Saved Location");
 
+                                                                            }
+
+                                                                            else {
+
+                                                                                Log.d("Retrieve", "RetrieveLat is null");
+
+                                                                            }
                                                                         }
-
                                                                         else {
 
-                                                                            Toast.makeText(getActivity(), "RetrieveLat is null.", Toast.LENGTH_SHORT).show();
+                                                                            Log.d("Retrieve", "RetrieveLat is null");
 
                                                                         }
-                                                                    }
-                                                                    else {
-
-                                                                        Toast.makeText(getActivity(), "Data is null.", Toast.LENGTH_SHORT).show();
 
                                                                     }
 
-                                                                }
-
-                                                                @Override
-                                                                public void onCancelled(DatabaseError databaseError) {
+                                                                    @Override
+                                                                    public void onCancelled(DatabaseError databaseError) {
 
 
-                                                                }
-                                                            });
+                                                                    }
+                                                                });
+
+                                                            }
+                                                            else {
+
+                                                                Log.d("ChildData1", "No Child Data Retrieved");
+
+                                                            }
 
                                                         }
                                                         else {
 
-                                                            Toast.makeText(getActivity(), "No Children Data Retrieved.", Toast.LENGTH_SHORT).show();
-
+                                                            Log.d("ChildData2", "No Child Data Retrieved");
                                                         }
 
                                                     }
-                                                    else {
 
-                                                        Toast.makeText(getActivity(), "No Children Data Retrieved.", Toast.LENGTH_SHORT).show();
+                                                    @Override
+                                                    public void onCancelled(DatabaseError databaseError) {
+
+
                                                     }
+                                                });
 
-                                                }
+                                            }
 
-                                                @Override
-                                                public void onCancelled(DatabaseError databaseError) {
+                                            @Override
+                                            public void onNothingSelected(AdapterView<?> adapterView) {
 
+                                            }
+                                        });
+                                    }
+                                    else {
 
-                                                }
-                                            });
+                                        Log.d("ChildData3", "No Child Data Retrieved");
 
-                                        }
+                                    }
 
-                                        @Override
-                                        public void onNothingSelected(AdapterView<?> adapterView) {
-
-                                        }
-                                    });
                                 }
                                 else {
 
-                                    Toast.makeText(getActivity(), "No Children Data Retrieved.", Toast.LENGTH_SHORT).show();
+                                    Log.d("ChildData4", "No Child Data Retrieved");
 
                                 }
-
-                            }
-                            else {
-
-                                Toast.makeText(getActivity(), "No Children Data Retrieved.", Toast.LENGTH_SHORT).show();
 
                             }
 
                         }
 
+                        catch(Exception e){
+
+                            Log.e("GeoFragments", e.getMessage(), e);
+
+                        }
+
+
                     }
-
-                    catch(Exception e){
-
-                        Log.e("GeoFragments", e.getMessage(), e);
-
-                    }
-
 
                 }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                }
+            });
 
-            }
-        });
+            SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+            map.getMapAsync(this);
+        }
 
-        SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        map.getMapAsync(this);
+        catch(Exception e){
+
+            Log.e("onMapView", e.getMessage(), e);
+        }
+
     }
 
     private class GetCoordinates extends AsyncTask<String,Void,String> {
@@ -354,91 +368,133 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
 
     @Override public void onMapReady(GoogleMap googleMap) {
 
-        maps = googleMap;
-        maps.clear();
-        LatLng l = new LatLng(7.051400, 125.594772);
-        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(l, 5));
+        try{
 
+            maps = googleMap;
+            maps.clear();
+            LatLng l = new LatLng(7.051400, 125.594772);
+            maps.moveCamera(CameraUpdateFactory.newLatLngZoom(l, 5));
+        }
 
+        catch(Exception e){
+
+            Log.e("onMapReady", e.getMessage(), e);
+        }
     }
 
     private void moveCamera(LatLng latLng, String title){
-        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
-        marker1 = maps.addMarker(new MarkerOptions().position(latLng).title(title));
-        drawMarkerWithCircle(latLng);
+
+        try{
+
+            maps.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+            marker1 = maps.addMarker(new MarkerOptions().position(latLng).title(title));
+            drawMarkerWithCircle(latLng);
+        }
+
+        catch(Exception e){
+
+            Log.e("onMoveCamera", e.getMessage(), e);
+        }
+
     }
 
     private void moveCamera1(Double a, Double b, String title){
-        LatLng c = new LatLng(a,b);
-        maps.moveCamera(CameraUpdateFactory.newLatLngZoom(c, 16));
-        marker2 = maps.addMarker(new MarkerOptions().position(c).title(title));
+
+        try{
+
+            LatLng c = new LatLng(a,b);
+            maps.moveCamera(CameraUpdateFactory.newLatLngZoom(c, 16));
+            marker2 = maps.addMarker(new MarkerOptions().position(c).title(title));
+        }
+        catch(Exception e){
+
+            Log.e("onMoveCamera1", e.getMessage(), e);
+        }
+
     }
 
     private void drawMarkerWithCircle(LatLng position){
 
-        double radiusInMeters = 100;
-        int strokeColor = 0xffff0000;
-        int shadeColor = 0x44ff0000;
+        try{
 
-        CircleOptions circleOptions = new CircleOptions().center(position).radius(radiusInMeters).fillColor(shadeColor).strokeColor(strokeColor).strokeWidth(8);
-        mCircle = maps.addCircle(circleOptions);
+            double radiusInMeters = 100;
+            int strokeColor = 0xffff0000;
+            int shadeColor = 0x44ff0000;
+
+            CircleOptions circleOptions = new CircleOptions().center(position).radius(radiusInMeters).fillColor(shadeColor).strokeColor(strokeColor).strokeWidth(8);
+            mCircle = maps.addCircle(circleOptions);
+        }
+
+        catch(Exception e){
+
+            Log.e("onDrawCircle", e.getMessage(), e);
+        }
 
     }
 
     private void getCurrentLoc(){
 
-        DatabaseReference getLoc = FirebaseDatabase.getInstance().getReference().child("Children");
-        getLoc.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getLoc = FirebaseDatabase.getInstance().getReference().child("Children");
+            getLoc.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
 
-                        System.out.println("Newemails: "+newemails);
-                        currentloc = dataSnapshot.child(user).child(newemails).child("CurrentLocation").getValue(String.class);
-                        if(currentloc!=null){
+                        try{
 
-                            System.out.println("Current Location"+ " "+currentloc);
-                            currentloc1 = currentloc.split(",");
-                            newl = Double.parseDouble(currentloc1[0]);
-                            newlg = Double.parseDouble(currentloc1[1]);
-                            moveCamera1(newl, newlg, "Current Location");
+                            System.out.println("Newemails: "+newemails);
+                            currentloc = dataSnapshot.child(user).child(newemails).child("CurrentLocation").getValue(String.class);
+                            if(currentloc!=null){
+
+                                System.out.println("Current Location"+ " "+currentloc);
+                                currentloc1 = currentloc.split(",");
+                                newl = Double.parseDouble(currentloc1[0]);
+                                newlg = Double.parseDouble(currentloc1[1]);
+                                moveCamera1(newl, newlg, "Current Location");
+                            }
+                            else {
+
+                                Toast.makeText(getActivity(), "Current Location is NULL.", Toast.LENGTH_SHORT).show();
+
+                            }
+
                         }
-                        else {
 
-                            Toast.makeText(getActivity(), "Current Location is NULL.", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("GeoFragments", e.getMessage(), e);
 
                         }
+
+
 
                     }
 
-                    catch(Exception e){
+                    else {
 
-                        Log.e("GeoFragments", e.getMessage(), e);
+                        Toast.makeText(getContext(), "No Current Location Data recieved!", Toast.LENGTH_SHORT).show();
 
                     }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
 
 
                 }
+            });
+        }
 
-                else {
+        catch(Exception e){
 
-                    Toast.makeText(getContext(), "No Current Location Data recieved!", Toast.LENGTH_SHORT).show();
+            Log.e("onGetCurrentLoc", e.getMessage(), e);
+        }
 
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-
-
-            }
-        });
 
     }
 
@@ -463,90 +519,107 @@ public class GeofencingFragments extends Fragment implements OnMapReadyCallback 
 
     private void getCurrentUser(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users");
-        getuser.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users");
+            getuser.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
 
-                        String emailz = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
-                        if(emailz!=null){
+                        try{
 
-                            emails = emailz;
-                            System.out.println("I am"+ " "+emails);
+                            String emailz = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                            if(emailz!=null){
+
+                                emails = emailz;
+                                System.out.println("I am"+ " "+emails);
+                            }
+                            else{
+
+                                Toast.makeText(getContext(), "No Current User found!", Toast.LENGTH_SHORT).show();
+                            }
                         }
-                        else{
 
-                            Toast.makeText(getContext(), "No Current User found!", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("GeoFragments", e.getMessage(), e);
                         }
+
+
+
                     }
 
-                    catch(Exception e){
+                }
 
-                        Log.e("GeoFragments", e.getMessage(), e);
-                    }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
                 }
+            });
+        }
 
-            }
+        catch(Exception e){
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+            Log.e("onGetCurrentUser", e.getMessage(), e);
+        }
 
-
-
-            }
-        });
 
     }
 
     private void getUser(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users");
-        getuser.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if( dataSnapshot != null){
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users");
+            getuser.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if( dataSnapshot != null){
 
-                        String newemailz = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
-                        if(newemailz!=null){
+                        try{
 
-                            newemails = newemailz;
-                            System.out.println("I am"+ " "+newemails);
+                            String newemailz = dataSnapshot.child(user).child("AllChildren").child(values).getValue(String.class);
+                            if(newemailz!=null){
+
+                                newemails = newemailz;
+                                System.out.println("I am"+ " "+newemails);
+
+                            }
+                            else{
+
+                                Toast.makeText(getContext(), "No Users found!", Toast.LENGTH_SHORT).show();
+                            }
 
                         }
-                        else{
 
-                            Toast.makeText(getContext(), "No Users found!", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("GeoFragments", e.getMessage(), e);
+
                         }
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("GeoFragments", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
+        }
+
+        catch(Exception e){
+
+            Log.e("onGetUser", e.getMessage(), e);
+        }
 
     }
 

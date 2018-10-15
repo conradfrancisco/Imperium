@@ -19,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -56,55 +57,65 @@ public class reset extends AppCompatActivity{
             @Override
             public void onClick(View v) {
 
-                final String email = inputEmail.getText().toString().trim();
+                try{
 
-                if (TextUtils.isEmpty(email)) {
-                    Toast.makeText(getApplication(), "Enter your registered Email Address", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(reset.this);
-                    builder.setTitle("Please confirm action!");
-                    builder.setMessage("Are you sure you want to Reset your Password?");
-                    builder.setIcon(R.drawable.icon);
-                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    final String email = inputEmail.getText().toString().trim();
 
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            progressBar.setVisibility(View.VISIBLE);
-                            auth.sendPasswordResetEmail(email)
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Toast.makeText(reset.this, "We have sent you instructions on how to reset your Password! Please check your Email Inbox", Toast.LENGTH_SHORT).show();
-                                                progressBar.setVisibility(View.GONE);
-                                                inputEmail.setText("");
-                                                Intent intent = new Intent(reset.this, login.class);
-                                                startActivity(intent);
-                                                finish();
+                    if (TextUtils.isEmpty(email)) {
+                        Toast.makeText(getApplication(), "Enter your registered Email Address", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    else {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(reset.this);
+                        builder.setTitle("Please confirm action!");
+                        builder.setMessage("Are you sure you want to Reset your Password?");
+                        builder.setIcon(R.drawable.icon);
+                        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
-                                            } else {
-                                                Toast.makeText(reset.this, "Failed to send reset instructions to the Email Address!", Toast.LENGTH_SHORT).show();
-                                                inputEmail.setText("");
-                                                progressBar.setVisibility(View.GONE);
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                progressBar.setVisibility(View.VISIBLE);
+                                auth.sendPasswordResetEmail(email)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(reset.this, "We have sent you instructions on how to reset your Password! Please check your Email Inbox", Toast.LENGTH_SHORT).show();
+                                                    progressBar.setVisibility(View.GONE);
+                                                    inputEmail.setText("");
+                                                    Intent intent = new Intent(reset.this, login.class);
+                                                    startActivity(intent);
+                                                    finish();
+
+                                                } else {
+                                                    Toast.makeText(reset.this, "Failed to send reset instructions to the Email Address!", Toast.LENGTH_SHORT).show();
+                                                    inputEmail.setText("");
+                                                    progressBar.setVisibility(View.GONE);
+                                                }
                                             }
-                                        }
-                                    });
-                        }
-                    });
-                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                                        });
+                            }
+                        });
+                        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
 
-                            dialogInterface.dismiss();
-                            Toast.makeText(getApplicationContext(), "Update User Password Cancelled!", Toast.LENGTH_SHORT).show();
-                            inputEmail.setText("");
-                        }
-                    });
-                    android.support.v7.app.AlertDialog alert = builder.create();
-                    alert.show();
+                                dialogInterface.dismiss();
+                                Toast.makeText(getApplicationContext(), "Update User Password Cancelled!", Toast.LENGTH_SHORT).show();
+                                inputEmail.setText("");
+                            }
+                        });
+                        android.support.v7.app.AlertDialog alert = builder.create();
+                        alert.show();
+                    }
                 }
+
+                catch(Exception e){
+
+                    Log.e("onReset", e.getMessage(), e);
+
+                }
+
             }
 
         });

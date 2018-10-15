@@ -14,6 +14,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,6 +37,8 @@ public class GeofenceService extends Service {
     String childuser = "";
     String passval = "";
     String useremail = "";
+    private FirebaseAuth auth;
+    private String email = "";
     Double lat1, lat2, lng1, lng2;
     String currentloc = "", savedloc = "";
     private Timer timer;
@@ -55,6 +59,13 @@ public class GeofenceService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId){
 
         super.onStartCommand(intent, flags, startId);
+        auth = FirebaseAuth.getInstance();
+        FirebaseUser users = auth.getCurrentUser();
+        if (users != null) {
+
+            email = users.getEmail();
+
+        }
         getCurrentUser();
 
         return START_STICKY;
@@ -89,276 +100,320 @@ public class GeofenceService extends Service {
 
     public void getCurrentChildUser() {
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
-        getuser.child(user).orderByChild("CurrentLocation").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
+            getuser.child(user).orderByChild("CurrentLocation").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
 
-                        for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                        try{
 
-                            if(childSnapshot != null){
+                            for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
 
-                                childuser = childSnapshot.getKey();
-                                getCurrentLoc(childuser);
-                                getCurrentTaskStatus(childuser);
+                                if(childSnapshot != null){
 
-                            }
+                                    childuser = childSnapshot.getKey();
+                                    getCurrentLoc(childuser);
+                                    getCurrentTaskStatus(childuser);
 
-                            else {
+                                }
 
-                                Toast.makeText(GeofenceService.this, "No Child Data Retrieved.", Toast.LENGTH_SHORT).show();
+                                else {
 
+                                    Log.d("ChildMonitor", "Please add a child to monitor first!");
+
+
+                                }
 
                             }
 
                         }
 
+                        catch(Exception e){
+
+                            Log.e("GeoService", e.getMessage(), e);
+
+                        }
+
                     }
+                    else {
 
-                    catch(Exception e){
-
-                        Log.e("GeoService", e.getMessage(), e);
+                        Log.d("ChildMonitor", "Please add a child to monitor first!");
 
                     }
 
                 }
-                else {
-
-                    Toast.makeText(getApplicationContext(), "Please add a child to monitor first!", Toast.LENGTH_LONG).show();
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
+            });
 
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        }
 
-            }
-        });
+        catch(Exception e){
+
+            Log.e("onRetrieveChildren", e.getMessage(), e);
+
+        }
+
     }
 
     public void getCurrentTaskStatus(final String childuser){
 
-        DatabaseReference status = FirebaseDatabase.getInstance().getReference().child("Users");
-        status.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot!=null){
+            DatabaseReference status = FirebaseDatabase.getInstance().getReference().child("Users");
+            status.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot!=null){
 
-                        String tasks = dataSnapshot.child(user).child("Children").child(childuser).child("HardStatus").getValue(String.class);
-                        if(tasks!=null){
+                        try{
+
+                            String tasks = dataSnapshot.child(user).child("Children").child(childuser).child("HardStatus").getValue(String.class);
+                            if(tasks!=null){
 
 
 
-                            if(tasks!=null && tasks.equals("1")){
+                                if(tasks!=null && tasks.equals("1")){
 
-                                notifs1();
+                                    notifs1();
 
-                            }
+                                }
 
-                            else {
+                                else {
 
-                                Log.d("GeoService", "No Tasks Yet");
+                                    Log.d("GeoService", "No Tasks Yet");
 
+                                }
                             }
                         }
+
+                        catch(Exception e){
+
+                            Log.e("GeoService", e.getMessage(), e);
+
+                        }
+
                     }
 
-                    catch(Exception e){
+                    else {
 
-                        Log.e("GeoService", e.getMessage(), e);
+                        Log.d("GeoService", "No Tasks Yet");
 
                     }
 
                 }
 
-                else {
-
-                    Toast.makeText(GeofenceService.this, "No tasks yet!", Toast.LENGTH_LONG).show();
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
+            });
+        }
 
-            }
+        catch(Exception e){
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+            Log.e("onRetrieveStatus", e.getMessage(), e);
+        }
 
     }
 
 
     public void getCurrentLoc(final String childuser){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
-        getuser.child(user).child(childuser).child("CurrentLocation").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if (dataSnapshot != null) {
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
+            getuser.child(user).child(childuser).child("CurrentLocation").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if (dataSnapshot != null) {
 
-                        currentloc = dataSnapshot.getValue(String.class);
-                        if(currentloc!=null){
+                        try{
 
-                            System.out.println("Current Location: " + currentloc);
-                            String split[] = currentloc.split(",");
-                            lat1 = Double.parseDouble(split[0]);
-                            lng1 = Double.parseDouble(split[1]);
-                            System.out.println("Current Latitude: " + lat1 + " and Current Longitude: " + lng1);
-                            getSavedLoc(childuser);
+                            currentloc = dataSnapshot.getValue(String.class);
+                            if(currentloc!=null){
+
+                                System.out.println("Current Location: " + currentloc);
+                                String split[] = currentloc.split(",");
+                                lat1 = Double.parseDouble(split[0]);
+                                lng1 = Double.parseDouble(split[1]);
+                                System.out.println("Current Latitude: " + lat1 + " and Current Longitude: " + lng1);
+                                getSavedLoc(childuser);
+                            }
+                            else{
+
+                                Log.d("onCurrentLoc", "No child current location was retrieved.");
+
+                            }
                         }
-                        else{
 
-                            Toast.makeText(getApplicationContext(), "No Current Location retrieved!", Toast.LENGTH_LONG).show();
+                        catch(Exception e){
 
+                            Log.e("GeoService", e.getMessage(), e);
                         }
                     }
 
-                    catch(Exception e){
+                    else {
 
-                        Log.e("GeoService", e.getMessage(), e);
+                        Log.d("onCurrentLoc", "No child current location was retrieved.");
+
                     }
                 }
 
-                else {
-
-                    Toast.makeText(getApplicationContext(), "No Current Location retrieved!", Toast.LENGTH_LONG).show();
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
-            }
+            });
+        }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        catch(Exception e){
 
-            }
-        });
+            Log.e("onCurrentLoc", e.getMessage(), e);
+        }
     }
 
     public void getSavedLoc(String childuser){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
-        getuser.child(user).child(childuser).child("SavedLocation").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if (dataSnapshot != null) {
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Children");
+            getuser.child(user).child(childuser).child("SavedLocation").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if (dataSnapshot != null) {
 
-                        if(savedloc!=null){
+                        try{
 
-                            savedloc = dataSnapshot.getValue(String.class);
-                            System.out.println("Saved Location: " + savedloc);
-                            String split[] = savedloc.split(",");
-                            lat2 = Double.parseDouble(split[0]);
-                            lng2 = Double.parseDouble(split[1]);
-                            System.out.println("Saved Latitude: " + lat2 + " and Saved Longitude: " + lng2);
-                            double earthRadius = 6371;
-                            double dlat = Math.toRadians(lat2 - lat1);
-                            double dlng = Math.toRadians(lng2 - lng1);
+                            if(savedloc!=null){
 
-                            double a = Math.sin(dlat/2) * Math.sin(dlat/2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dlng/2) * Math.sin(dlng/2);
-                            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                                savedloc = dataSnapshot.getValue(String.class);
+                                System.out.println("Saved Location: " + savedloc);
+                                String split[] = savedloc.split(",");
+                                lat2 = Double.parseDouble(split[0]);
+                                lng2 = Double.parseDouble(split[1]);
+                                System.out.println("Saved Latitude: " + lat2 + " and Saved Longitude: " + lng2);
+                                double earthRadius = 6371;
+                                double dlat = Math.toRadians(lat2 - lat1);
+                                double dlng = Math.toRadians(lng2 - lng1);
 
-                            double distance = earthRadius * c * 1000;
+                                double a = Math.sin(dlat/2) * Math.sin(dlat/2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dlng/2) * Math.sin(dlng/2);
+                                double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-                            if (distance > 100){
+                                double distance = earthRadius * c * 1000;
 
-                                notifs();
+                                if (distance > 100){
+
+                                    notifs();
+                                }
+
+                                System.out.println("The distance is: "+distance);
+
                             }
 
-                            System.out.println("The distance is: "+distance);
+                            else {
+
+                                Log.d("SavedLoc", "No child saved location was retrieved.");
+
+                            }
+                        }
+
+                        catch (Exception e){
+
+                            Log.e("GeoService", e.getMessage(), e);
 
                         }
 
-                        else {
-
-                            Toast.makeText(getApplicationContext(), "No Saved Location retrieved!", Toast.LENGTH_LONG).show();
-
-                        }
                     }
 
-                    catch (Exception e){
+                    else {
 
-                        Log.e("GeoService", e.getMessage(), e);
-
+                        Log.d("SavedLoc", "No child saved location was retrieved.");
                     }
 
                 }
 
-                else {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    Toast.makeText(getApplicationContext(), "No Saved Location retrieved!", Toast.LENGTH_LONG).show();
+
+
                 }
+            });
 
-            }
+        }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        catch (Exception e){
 
-
-
-            }
-        });
+            Log.e("onSavedLoc", e.getMessage(), e);
+        }
     }
 
     public void getCurrentUser(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-        getuser.child("currentuser").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            String[] dab = email.split("@");
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
+            getuser.child(dab[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try{
+                    if(dataSnapshot != null){
 
-                        if(user!=null){
+                        try{
 
-                            user = dataSnapshot.getValue(String.class);
-                            System.out.println("Current Parent User: "+user);
-                            startTimer();
+                            if(user!=null){
 
+                                user = dataSnapshot.getValue(String.class);
+                                System.out.println("Current Parent User: "+user);
+                                startTimer();
+
+                            }
+
+                            else {
+
+                                Toast.makeText(getApplicationContext(), "No Current User retrieved!", Toast.LENGTH_LONG).show();
+
+                            }
                         }
 
-                        else {
+                        catch(Exception e){
 
-                            Toast.makeText(getApplicationContext(), "No Current User retrieved!", Toast.LENGTH_LONG).show();
+                            Log.e("GeoService", e.getMessage(), e);
 
                         }
                     }
+                    else {
 
-                    catch(Exception e){
-
-                        Log.e("GeoService", e.getMessage(), e);
-
+                        Toast.makeText(getApplicationContext(), "Please create your account @ Imperium!", Toast.LENGTH_LONG).show();
+                        stoptimertask();
                     }
-                }
-                else {
 
-                    Toast.makeText(getApplicationContext(), "Please create your account @ Imperium!", Toast.LENGTH_LONG).show();
-                    stoptimertask();
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
+        }
 
+        catch(Exception e){
+
+            Log.e("onGetUser", e.getMessage(), e);
+        }
     }
 
     public void notifs(){

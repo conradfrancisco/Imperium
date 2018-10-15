@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,6 +43,7 @@ public class mainmenu extends AppCompatActivity
     private String name = " ";
     private String email = " ";
     private String urladd = " ";
+    private String useremail = "";
     private CircleImageView imageViewNav;
     private int image = 0;
     private TextView fname,femail;
@@ -62,6 +64,12 @@ public class mainmenu extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         auth = FirebaseAuth.getInstance();
+        FirebaseUser users = auth.getCurrentUser();
+        if (users != null) {
+
+            useremail = users.getEmail();
+
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -228,189 +236,228 @@ public class mainmenu extends AppCompatActivity
 
     private void getProfile(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users").child(user);
-        getuser.child("ProfilePicture").child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Users").child(user);
+            getuser.child("ProfilePicture").child("imageUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    String urladds = dataSnapshot.getValue(String.class);
-                    try{
+                    if(dataSnapshot != null){
 
-                        if(urladds!=null){
+                        String urladds = dataSnapshot.getValue(String.class);
+                        try{
 
-                            urladd = urladds;
-                            Glide.with(mainmenu.this).load(urladd).into(imageViewNav);
+                            if(urladds!=null){
+
+                                urladd = urladds;
+                                Glide.with(mainmenu.this).load(urladd).into(imageViewNav);
+
+                            }
+                            else{
+
+                                Log.d("getProfile", "No Profile was retrieved");
+
+                            }
 
                         }
-                        else{
 
-                            Toast.makeText(getApplicationContext(), "No Image Found!", Toast.LENGTH_SHORT).show();
+                        catch(Exception e){
+
+                            Log.e("onGetProfile", e.getMessage(), e);
 
                         }
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("New Pin Registration", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
+        }
+
+        catch(Exception e){
+
+            Log.e("onGetProfile", e.getMessage(), e);
+
+        }
 
     }
 
     public void getCurrentUser(){
 
-        DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
-        getuser.child("currentuser").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            String[] app = useremail.split("@");
+            DatabaseReference getuser = FirebaseDatabase.getInstance().getReference().child("Current");
+            getuser.child(app[0]).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    String users = dataSnapshot.getValue(String.class);
-                    try{
+                    if(dataSnapshot != null){
 
-                        if(users!=null){
+                        String users = dataSnapshot.getValue(String.class);
+                        try{
 
-                            user = users;
-                            getName();
+                            if(users!=null){
+
+                                user = users;
+                                getName();
+
+                            }
+
+                            else {
+
+                                Log.d("onGetCurrent", "No Current User");
+
+                            }
 
                         }
 
-                        else {
+                        catch(Exception e){
 
-                            Toast.makeText(getApplicationContext(), "No Current User Found!", Toast.LENGTH_SHORT).show();
+                            Log.e("onGetCurrent", e.getMessage(), e);
 
                         }
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("New Pin Registration", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
 
 
-            }
-        });
+                }
+            });
+        }
+
+        catch(Exception e){
+
+            Log.e("onGetCurrent", e.getMessage(), e);
+
+        }
+
 
     }
 
     private void getName(){
 
-        DatabaseReference getname = FirebaseDatabase.getInstance().getReference().child("Users");
-        getname.child(user).child("fullname").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getname = FirebaseDatabase.getInstance().getReference().child("Users");
+            getname.child(user).child("fullname").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    String namea = dataSnapshot.getValue(String.class);
-                    try{
+                    if(dataSnapshot != null){
 
-                        if(namea!=null){
+                        String namea = dataSnapshot.getValue(String.class);
+                        try{
 
-                            name = namea;
-                            getEmail();
+                            if(namea!=null){
+
+                                name = namea;
+                                getEmail();
+
+                            }
+
+                            else{
+
+                                Log.d("onGetName", "No Name Retrieved.");
+
+                            }
 
                         }
 
-                        else{
+                        catch(Exception e){
 
-                            Toast.makeText(getApplicationContext(), "Name was not found!", Toast.LENGTH_SHORT).show();
+                            Log.e("onGetName", e.getMessage(), e);
 
                         }
-
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("New Pin Registration", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
 
-            }
-        });
+        }
+
+        catch(Exception e){
+
+            Log.e("onGetName", e.getMessage(), e);
+
+        }
 
     }
 
 
     private void getEmail(){
 
-        DatabaseReference getemail = FirebaseDatabase.getInstance().getReference().child("Users");
-        getemail.child(user).child("email").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+        try{
 
-                if(dataSnapshot != null){
+            DatabaseReference getemail = FirebaseDatabase.getInstance().getReference().child("Users");
+            getemail.child(user).child("email").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    String emailz = dataSnapshot.getValue(String.class);
-                    try{
+                    if(dataSnapshot != null){
 
-                        if(emailz!=null){
+                        String emailz = dataSnapshot.getValue(String.class);
+                        try{
 
-                            email = emailz;
-                            System.out.println(user);
-                            System.out.println(name);
-                            System.out.println(email);
-                            getProfile();
-                            fname.setText(name);
-                            femail.setText(email);
+                            if(emailz!=null){
 
+                                email = emailz;
+                                System.out.println(user);
+                                System.out.println(name);
+                                System.out.println(email);
+                                getProfile();
+                                fname.setText(name);
+                                femail.setText(email);
+
+                            }
+
+                            else {
+
+                                Log.d("OnEmail", "No Email Address was found");
+
+                            }
                         }
 
-                        else {
+                        catch(Exception e){
 
-                            Toast.makeText(getApplicationContext(), "No Email Address was found!", Toast.LENGTH_SHORT).show();
+                            Log.e("New Pin Registration", e.getMessage(), e);
 
                         }
-                    }
-
-                    catch(Exception e){
-
-                        Log.e("New Pin Registration", e.getMessage(), e);
 
                     }
 
                 }
 
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+        }
 
-            }
-        });
+        catch(Exception e){
+
+            Log.e("onRetreveEmail", e.getMessage(), e);
+
+        }
 
     }
 
@@ -439,11 +486,21 @@ public class mainmenu extends AppCompatActivity
 
     public void signOut() {
 
-        auth.signOut();
-        startActivity(new Intent(mainmenu.this, login.class));
-        Intent i = new Intent(this, GeofenceService.class);
-        this.stopService(i);
-        finish();
+        try{
+
+            auth.signOut();
+            startActivity(new Intent(mainmenu.this, login.class));
+            Intent i = new Intent(this, GeofenceService.class);
+            this.stopService(i);
+            finish();
+
+        }
+
+        catch(Exception e){
+
+            Log.e("onSignOut", e.getMessage(), e);
+
+        }
     }
 
 }
